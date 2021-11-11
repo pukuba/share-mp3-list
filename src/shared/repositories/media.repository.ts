@@ -4,48 +4,56 @@ import {
     UnprocessableEntityException,
     NotFoundException,
     ForbiddenException,
+    Injectable,
+    Inject,
 } from "@nestjs/common"
 
 // Other dependencies
+import { Db, ObjectId, ObjectID } from "mongodb"
 import { Repository, EntityRepository, Like } from "typeorm"
 
 // Local files
 import { UploadMediaDto, UpdateMediaDto } from "src/app/media/dto"
 import { configService } from "../services/config.service"
-import { MediaEntity } from "../entities/media.entity"
 
-@EntityRepository(MediaEntity)
-export class MediaRepository extends Repository<MediaEntity> {
+@Injectable()
+export class MediaRepository {
+    constructor(
+        @Inject("MONGODB_CONNECTION")
+        private db: Db,
+    ) {}
     async uploadMedia(userId: string, dto: UploadMediaDto, url: string) {
-        const media = new MediaEntity({
+        const audio = {
             userId: userId,
-            ...dto,
             url,
-        })
+            name: dto.title,
+        }
 
         try {
-            return await this.save(media)
+            await this.db.collection("audio").insertOne(audio)
         } catch (err) {
             throw new UnprocessableEntityException(err.errmsg)
         }
     }
 
-    async getMediaByMediaId(mediaId: string) {
-        let media: MediaEntity
+    async getMediaByMediaId(audioId: string) {
+        let audio
         try {
-            media = await this.findOneOrFail({ mediaId: mediaId })
+            audio = await this.db
+                .collection("audio")
+                .findOne({ _id: new ObjectId(audioId) })
         } catch {
             throw new BadRequestException("해당 영상이 존재하지가 않습니다")
         }
-        return media
+        return audio
     }
 
     async updateMediaViewCount(mediaId: string, count: number) {
-        let media: MediaEntity
+        let audio
         try {
-            media = await this.findOneOrFail({ mediaId: mediaId })
-            media.views += count
-            await this.save(media)
+            // media = await this.findOneOrFail({ mediaId: mediaId })
+            // media.views += count
+            // await this.save(media)
         } catch {
             throw new NotFoundException("해당 게시글이 존재하지가 않습니다")
         }
@@ -54,43 +62,40 @@ export class MediaRepository extends Repository<MediaEntity> {
     async searchMedia(page: number, keyword: string = "") {
         const skip = Math.max(page - 1, 0) * 20
         const take = 20
-        const [result, total] = await this.findAndCount({
-            where: {
-                title: Like(`%${keyword}%`),
-            },
-            order: { date: "DESC" },
-            take: take,
-            skip: skip,
-        })
+        const result = await this.db
+            .collection("audio")
+            .find({
+                name: {
+                    $regex: new RegExp(keyword, "i"),
+                },
+            })
+            .toArray()
         return {
             data: result,
-            count: total,
+            count: 1,
         }
     }
 
     async deleteMedia(userId: string, mediaId: string) {
-        try {
-            const media: MediaEntity = await this.findOneOrFail({
-                mediaId,
-                userId,
-            })
-            await this.delete(media)
-        } catch {
-            throw new NotFoundException("해당 영상이 존재하지 않습니다")
+        const { deletedCount } = await this.db
+            .collection("audio")
+            .deleteOne({ userId, _id: new ObjectId(mediaId) })
+        if (deletedCount === 0) {
+            throw new NotFoundException("해당 음원이 존재하지 않습니다")
         }
     }
 
-    async patchMedia(userId: string, mediaId: string, dto: UpdateMediaDto) {
-        try {
-            const media: MediaEntity = await this.findOneOrFail({
-                mediaId,
-                userId,
-            })
-            media.title = dto.title || media.title
-            media.description = dto.description || media.description
-            return await this.save(media)
-        } catch {
-            throw new NotFoundException("해당 영상이 존재하지 않습니다")
-        }
-    }
+    // async patchMedia(userId: string, mediaId: string, dto: UpdateMediaDto) {
+    //     try {
+    //         const audio = await this.db.collection("audio").findOne({
+    //             mediaId,
+    //             userId,
+    //         })
+    //         media.title = dto.title || media.title
+    //         media.description = dto.description || media.description
+    //         return await this.save(media)
+    //     } catch {
+    //         throw new NotFoundException("해당 영상이 존재하지 않습니다")
+    //     }
+    // }
 }

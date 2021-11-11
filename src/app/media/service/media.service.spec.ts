@@ -24,16 +24,7 @@ describe("MediaService", () => {
     let mediaId: string
     before(async () => {
         const module = await Test.createTestingModule({
-            imports: [
-                MediaModule,
-                TypeOrmModule.forRoot({
-                    type: "mysql",
-                    username: "travis",
-                    database: "test",
-                    entities: ["./**/*.entity.ts"],
-                    synchronize: true,
-                }),
-            ],
+            imports: [MediaModule],
         }).compile()
         service = module.get<MediaService>(MediaService)
         userDb = module.get<UserRepository>(UserRepository)

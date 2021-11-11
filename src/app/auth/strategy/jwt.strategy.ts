@@ -5,18 +5,18 @@ import {
     UnauthorizedException,
     BadRequestException,
     ConsoleLogger,
+    Inject,
 } from "@nestjs/common"
 
 import { ExtractJwt, Strategy } from "passport-jwt"
 
 import { UserRepository } from "src/shared/repositories/user.repository"
 import { configService } from "src/shared/services/config.service"
-import { UserEntity } from "src/shared/entities/user.entity"
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(
-        @InjectRepository(UserEntity)
+        @Inject("DATABASE_CONNECTION")
         private userRepository: UserRepository,
     ) {
         super({
@@ -32,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             throw new UnauthorizedException()
         }
         try {
-            const user = await this.userRepository.findOneOrFail({ id })
+            const user = await this.userRepository.getUserById(id)
             return {
                 id: user.id,
                 username: user.username,

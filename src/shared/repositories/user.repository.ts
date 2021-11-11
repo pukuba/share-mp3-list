@@ -2,11 +2,15 @@ import {
     BadRequestException,
     UnprocessableEntityException,
     NotFoundException,
+    Inject,
     ForbiddenException,
+    Injectable,
+    Module,
 } from "@nestjs/common"
 
 import { Repository, EntityRepository } from "typeorm"
 import * as crypto from "bcryptjs"
+import { Db } from "mongodb"
 
 import {
     CreateUserDto,
@@ -15,21 +19,31 @@ import {
     DeleteUserDto,
     LoginDto,
 } from "src/app/auth/dto"
-import { configService } from "../services/config.service"
-import { UserEntity } from "../entities/user.entity"
 
-@EntityRepository(UserEntity)
-export class UserRepository extends Repository<UserEntity> {
-    constructor() {
-        super()
+export class UserRepository {
+    constructor(
+        @Inject("DATABASE_CONNECTION")
+        private db: Db,
+    ) {}
+
+    async isExist(dto: CreateUserDto) {
+        const has = await this.db.collection("user").findOne({
+            $or: [
+                { id: dto.id },
+                { username: dto.username },
+                { phoneNumber: dto.phoneNumber },
+            ],
+        })
+        if (has === null) {
+            return true
+        }
+        return false
     }
 
     async validateUser(dto: LoginDto) {
-        let user: UserEntity
+        let user
         try {
-            user = await this.findOneOrFail({
-                id: dto.id,
-            })
+            user = await this.db.collection("user").findOne({ id: dto.id })
         } catch {
             throw new BadRequestException("계정이 존재하지 않습니다.")
         }
@@ -40,32 +54,30 @@ export class UserRepository extends Repository<UserEntity> {
     }
 
     async createUser(dto: CreateUserDto): Promise<void> {
-        const newUser: UserEntity = new UserEntity({
+        const newUser = {
             username: dto.username,
             password: dto.password,
             phoneNumber: dto.phoneNumber,
             id: dto.id,
-        })
+        }
         try {
-            await this.save(newUser)
+            await this.db.collection("user").insertOne(newUser)
         } catch (error) {
             throw new UnprocessableEntityException(error.errmsg)
         }
     }
 
-    async getUserByPhoneNumber(phoneNumber: string): Promise<UserEntity> {
+    async getUserByPhoneNumber(phoneNumber: string) {
         try {
-            return await this.findOneOrFail({
-                phoneNumber,
-            })
+            return await this.db.collection("user").findOne({ phoneNumber })
         } catch (err) {
             throw new NotFoundException("계정이 존재하지 않습니다.")
         }
     }
 
-    async getUserById(id: string): Promise<UserEntity> {
+    async getUserById(id: string) {
         try {
-            return await this.findOneOrFail({
+            return await this.db.collection("user").findOne({
                 id,
             })
         } catch (err) {
@@ -73,31 +85,33 @@ export class UserRepository extends Repository<UserEntity> {
         }
     }
 
-    async updateUserPassword(
-        phoneNumber: string,
-        password: string,
-    ): Promise<UserEntity> {
-        let user: UserEntity
+    async updateUserPassword(phoneNumber: string, password: string) {
+        let user
         try {
-            user = await this.findOneOrFail({
+            user = await this.db.collection("user").findOne({
                 phoneNumber: phoneNumber,
             })
         } catch (error) {
             throw new NotFoundException("계정이 존재하지 않습니다")
         }
         const hashedPassword = crypto.hashSync(password, crypto.genSaltSync(10))
-        user.password = hashedPassword
-        return await this.save(user)
+        await this.db
+            .collection("user")
+            .updateOne(
+                { phoneNumber: phoneNumber },
+                { $set: { password: hashedPassword } },
+            )
+        return user
     }
 
     async deleteUser(dto: DeleteUserDto) {
         try {
             const user = await this.validateUser(dto)
-            const { affected } = await this.delete({
-                id: user.id,
-                password: user.password,
-            })
-            if (affected === 0) throw new Error()
+            const { deletedCount } = await this.db
+                .collection("user")
+                .deleteOne({ id: user.id })
+
+            if (deletedCount === 0) throw new Error()
         } catch (e) {
             throw new NotFoundException("계정이 존재하지 않습니다")
         }

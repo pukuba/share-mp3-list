@@ -42,7 +42,7 @@ export class MessageService {
                     countryCode: "82",
                     from: configService.getEnv("PHONE_NUMBER"),
                     contentType: "COMM",
-                    content: `[폼 클레이] 본인확인 인증번호 \n[${verificationCode}]를 화면에 입력해주세요`,
+                    content: `[Share Mp3 List] 본인확인 인증번호 \n[${verificationCode}]를 화면에 입력해주세요`,
                     messages: [
                         {
                             to: phoneNumber,

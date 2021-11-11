@@ -8,7 +8,6 @@ import { APP_GUARD } from "@nestjs/core"
 import { JwtModule } from "@nestjs/jwt"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { AuthController } from "./controller/auth.controller"
-import { UserEntity } from "../../shared/entities/user.entity"
 import { AuthService } from "./service/auth.service"
 import { PassportModule } from "@nestjs/passport"
 import { UserRepository } from "src/shared/repositories/user.repository"
@@ -19,13 +18,14 @@ import { RedisService } from "src/shared/services/redis.service"
 import { JwtStrategy } from "./strategy/jwt.strategy"
 import { JwtAuthGuard } from "src/shared/guards/role.guard"
 import { BlacklistMiddleware } from "src/shared/middleware/blacklist.middleware"
+import { DatabaseModule } from "../../shared/database/mongodb.module"
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, UserRepository]),
         PassportModule,
         JwtModule.register({
             secret: configService.getEnv("JWT_TOKEN"),
         }),
+        DatabaseModule,
     ],
     providers: [
         AuthService,
@@ -33,6 +33,7 @@ import { BlacklistMiddleware } from "src/shared/middleware/blacklist.middleware"
         MessageService,
         JwtManipulationService,
         JwtStrategy,
+        UserRepository,
     ],
     controllers: [AuthController],
     exports: [AuthService],

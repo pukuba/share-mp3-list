@@ -4,6 +4,7 @@ import {
     HttpStatus,
     BadRequestException,
     UnauthorizedException,
+    Inject,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 
@@ -18,14 +19,12 @@ import { AwsService } from "src/shared/services/aws.service"
 import { MediaRepository } from "src/shared/repositories/media.repository"
 import { File } from "src/shared/services/type"
 import { RedisService } from "src/shared/services/redis.service"
-import { MediaEntity } from "src/shared/entities/media.entity"
 
 @Injectable()
 export class MediaService {
     constructor(
         private readonly awsService: AwsService,
         private readonly redisService: RedisService,
-        @InjectRepository(MediaRepository)
         private readonly mediaRepository: MediaRepository,
     ) {}
 
@@ -48,12 +47,11 @@ export class MediaService {
                         "media",
                         file.buffer,
                     )
-                    const newMedia: MediaEntity =
-                        await this.mediaRepository.uploadMedia(
-                            userId,
-                            payload,
-                            url,
-                        )
+                    const newMedia = await this.mediaRepository.uploadMedia(
+                        userId,
+                        payload,
+                        url,
+                    )
                     return newMedia
                 } catch {
                     throw new BadRequestException("Error uploading file")
@@ -88,6 +86,6 @@ export class MediaService {
         mediaId: string,
         payload: UpdateMediaDto,
     ) {
-        return await this.mediaRepository.patchMedia(userId, mediaId, payload)
+        // return await this.mediaRepository.patchMedia(userId, mediaId, payload)
     }
 }

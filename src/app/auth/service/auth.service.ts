@@ -4,6 +4,7 @@ import {
     HttpStatus,
     BadRequestException,
     UnauthorizedException,
+    Inject,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 
@@ -22,7 +23,6 @@ import {
     ResetPasswordDto,
     DeleteUserDto,
 } from "../dto"
-import { UserEntity } from "src/shared/entities/user.entity"
 import { randNumber } from "src/shared/lib"
 import { JwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { RedisService } from "src/shared/services/redis.service"
@@ -36,17 +36,14 @@ export class AuthService {
         private readonly jwtService: JwtManipulationService,
         private readonly redisService: RedisService,
         private readonly messageService: MessageService,
-        @InjectRepository(UserRepository)
         private readonly userRepository: UserRepository,
     ) {}
 
     async signUp(dto: CreateUserDto) {
         const { username, phoneNumber, id, verificationToken } = dto
 
-        const user = await this.userRepository.find({
-            where: [{ username }, { phoneNumber }, { id }],
-        })
-        if (user.length > 0)
+        const has = await this.userRepository.isExist(dto)
+        if (has === false)
             throw new BadRequestException(
                 "이미 중복된 아이디, 혹은 닉네임, 휴대번호가 있습니다.",
             )
@@ -157,7 +154,7 @@ export class AuthService {
         return responseData
     }
 
-    async validateUser(dto: LoginDto): Promise<UserEntity> {
+    async validateUser(dto: LoginDto) {
         return await this.userRepository.validateUser(dto)
     }
 

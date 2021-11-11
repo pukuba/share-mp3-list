@@ -1,0 +1,38 @@
+import { Module } from "@nestjs/common"
+import { MongoClient, Db } from "mongodb"
+import { configService } from "../services/config.service"
+
+@Module({
+    providers: [
+        {
+            provide: "DATABASE_CONNECTION",
+            useFactory: async (): Promise<Db> => {
+                try {
+                    const client = await MongoClient.connect(
+                        configService.getEnv("DB_HOST"),
+                    )
+
+                    const db = client.db()
+
+                    await Promise.all([
+                        db
+                            .collection("user")
+                            .createIndex({ phoneNumber: 1 }, { unique: true }),
+                        db
+                            .collection("user")
+                            .createIndex({ id: 1 }, { unique: true }),
+                        db
+                            .collection("user")
+                            .createIndex({ username: 1 }, { unique: true }),
+                    ])
+
+                    return db
+                } catch (e) {
+                    throw e
+                }
+            },
+        },
+    ],
+    exports: ["DATABASE_CONNECTION"],
+})
+export class DatabaseModule {}

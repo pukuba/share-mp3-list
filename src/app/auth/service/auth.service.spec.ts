@@ -17,16 +17,7 @@ describe("UserService", () => {
     let token: string
     before(async () => {
         const module = await Test.createTestingModule({
-            imports: [
-                AuthModule,
-                TypeOrmModule.forRoot({
-                    type: "mysql",
-                    username: "travis",
-                    database: "test",
-                    entities: ["./**/*.entity.ts"],
-                    synchronize: true,
-                }),
-            ],
+            imports: [AuthModule],
         }).compile()
         service = module.get<AuthService>(AuthService)
         db = module.get<UserRepository>(UserRepository)

@@ -4,7 +4,6 @@ import {
     MiddlewareConsumer,
     RequestMethod,
 } from "@nestjs/common"
-import { TypeOrmModule } from "@nestjs/typeorm"
 import { AppController } from "./app.controller"
 import { Connection } from "typeorm"
 import { AuthModule } from "./app/auth/auth.module"
@@ -20,7 +19,6 @@ import { MediaModule } from "./app/media/media.module"
             envFilePath: ".env",
             isGlobal: true,
         }),
-        TypeOrmModule.forRoot(),
         AuthModule,
         MediaModule,
     ],
