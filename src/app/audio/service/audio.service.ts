@@ -14,28 +14,27 @@ import { validate } from "class-validator"
 import { getRepository, Repository } from "typeorm"
 
 // Local files
-import { UploadMediaDto, UpdateMediaDto } from "../dto"
+import { UpdateAudioDto, UploadAudioDto } from "../dto"
 import { AwsService } from "src/shared/services/aws.service"
-import { MediaRepository } from "src/shared/repositories/media.repository"
+import { AudioRepository } from "src/shared/repositories/audio.repository"
 import { File } from "src/shared/services/type"
 import { RedisService } from "src/shared/services/redis.service"
 
 @Injectable()
-export class MediaService {
+export class AudioService {
     constructor(
         private readonly awsService: AwsService,
         private readonly redisService: RedisService,
-        private readonly mediaRepository: MediaRepository,
+        private readonly audioRepository: AudioRepository,
     ) {}
 
-    async uploadMedia(userId: string, file: File, payload: UploadMediaDto) {
-        payload.title = payload.title.replace(/^\s+|\s+$/g, "")
-        if (payload.title.length === 0) {
+    async uploadAudio(userId: string, file: File, payload: UploadAudioDto) {
+        payload.name = payload.name.replace(/^\s+|\s+$/g, "")
+        if (payload.name.length === 0) {
             throw new BadRequestException("Title name can not be whitespace")
         }
-        const dto = new UploadMediaDto()
-        dto.title = payload.title
-        dto.description = payload.description
+        const dto = new UploadAudioDto()
+        dto.name = payload.name
         return await validate(dto, { validationError: { target: false } }).then(
             async (errors) => {
                 if (errors.length > 0) {
@@ -44,15 +43,15 @@ export class MediaService {
                 try {
                     const url = await this.awsService.uploadFile(
                         `${Date.now()}-${file.originalname}`,
-                        "media",
+                        "audio",
                         file.buffer,
                     )
-                    const newMedia = await this.mediaRepository.uploadMedia(
+                    const newAudio = await this.audioRepository.uploadAudio(
                         userId,
                         payload,
                         url,
                     )
-                    return newMedia
+                    return newAudio
                 } catch {
                     throw new BadRequestException("Error uploading file")
                 }
@@ -60,32 +59,32 @@ export class MediaService {
         )
     }
 
-    async getMedia(mediaId: string, ip: string, userId?: string) {
-        const media = await this.mediaRepository.getMediaByMediaId(mediaId)
-        const view = await this.redisService.getData(`${mediaId}${ip}`)
+    async getAudio(audioId: string, ip: string, userId?: string) {
+        const audio = await this.audioRepository.getAudioByAudioId(audioId)
+        const view = await this.redisService.getData(`${audioId}${ip}`)
         if (view === null) {
             await Promise.all([
-                this.redisService.setOnlyKey(`${mediaId}${ip}`, 3600),
-                this.mediaRepository.updateMediaViewCount(mediaId, 1),
+                this.redisService.setOnlyKey(`${audioId}${ip}`, 3600),
+                this.audioRepository.updateAudioViewCount(audioId, 1),
             ])
-            media.views++
+            audio.views++
         }
-        return media
+        return audio
     }
 
-    async searchMedia(page: number, keyword: string) {
-        return await this.mediaRepository.searchMedia(page, keyword)
+    async searchAudio(page: number, keyword: string) {
+        return await this.audioRepository.searchAudio(page, keyword)
     }
 
-    async deleteMedia(userId: string, mediaId: string) {
-        return await this.mediaRepository.deleteMedia(userId, mediaId)
+    async deleteAudio(userId: string, audioId: string) {
+        return await this.audioRepository.deleteAudio(userId, audioId)
     }
 
-    async updateMedia(
+    async updateAudio(
         userId: string,
-        mediaId: string,
-        payload: UpdateMediaDto,
+        audioId: string,
+        payload: UpdateAudioDto,
     ) {
-        // return await this.mediaRepository.patchMedia(userId, mediaId, payload)
+        // return await this.audioRepository.patchMedia(userId, audioId, payload)
     }
 }

@@ -5,13 +5,12 @@ import {
     RequestMethod,
 } from "@nestjs/common"
 import { AppController } from "./app.controller"
-import { Connection } from "typeorm"
 import { AuthModule } from "./app/auth/auth.module"
 import { ConfigModule } from "@nestjs/config"
 import { AuthService } from "./app/auth/service/auth.service"
 import { RedisService } from "./shared/services/redis.service"
-
-import { MediaModule } from "./app/media/media.module"
+import { DatabaseModule } from "./shared/database/mongodb.module"
+import { AudioModule } from "./app/audio/audio.module"
 @Global()
 @Module({
     imports: [
@@ -20,7 +19,7 @@ import { MediaModule } from "./app/media/media.module"
             isGlobal: true,
         }),
         AuthModule,
-        MediaModule,
+        AudioModule,
     ],
     controllers: [AppController],
     providers: [RedisService],

@@ -8,27 +8,27 @@ import { Connection, Repository } from "typeorm"
 import { deepStrictEqual as equal } from "assert"
 import * as fs from "fs"
 // Local files
-import { MediaService } from "./media.service"
-import { MediaController } from "../controller/media.controller"
+import { AudioService } from "./audio.service"
+import { AudioController } from "../controller/audio.controller"
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { MessageService } from "src/shared/services/message.service"
 import { RedisService } from "src/shared/Services/redis.service"
-import { MediaModule } from "../media.module"
+import { AudioModule } from "../audio.module"
 import { UserRepository } from "src/shared/repositories/user.repository"
-import { MediaRepository } from "src/shared/repositories/media.repository"
+import { AudioRepository } from "src/shared/repositories/audio.repository"
 describe("MediaService", () => {
-    let service: MediaService
+    let service: AudioService
     let userDb: UserRepository
-    let mediaDb: MediaRepository
+    let mediaDb: AudioRepository
     let token: string
     let mediaId: string
     before(async () => {
         const module = await Test.createTestingModule({
-            imports: [MediaModule],
+            imports: [AudioModule],
         }).compile()
-        service = module.get<MediaService>(MediaService)
+        service = module.get<AudioService>(AudioService)
         userDb = module.get<UserRepository>(UserRepository)
-        mediaDb = module.get<MediaRepository>(MediaRepository)
+        mediaDb = module.get<AudioRepository>(AudioRepository)
         await userDb.createUser({
             username: "test",
             password: "testtest1@@",

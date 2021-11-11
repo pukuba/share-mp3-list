@@ -13,20 +13,21 @@ import { Db, ObjectId, ObjectID } from "mongodb"
 import { Repository, EntityRepository, Like } from "typeorm"
 
 // Local files
-import { UploadMediaDto, UpdateMediaDto } from "src/app/media/dto"
+import { UpdateAudioDto, UploadAudioDto } from "src/app/audio/dto"
 import { configService } from "../services/config.service"
 
 @Injectable()
-export class MediaRepository {
+export class AudioRepository {
     constructor(
-        @Inject("MONGODB_CONNECTION")
+        @Inject("DATABASE_CONNECTION")
         private db: Db,
     ) {}
-    async uploadMedia(userId: string, dto: UploadMediaDto, url: string) {
+    async uploadAudio(userId: string, dto: UploadAudioDto, url: string) {
         const audio = {
             userId: userId,
             url,
-            name: dto.title,
+            name: dto.name,
+            views: 0,
         }
 
         try {
@@ -36,19 +37,18 @@ export class MediaRepository {
         }
     }
 
-    async getMediaByMediaId(audioId: string) {
-        let audio
-        try {
-            audio = await this.db
-                .collection("audio")
-                .findOne({ _id: new ObjectId(audioId) })
-        } catch {
+    async getAudioByAudioId(audioId: string) {
+        const audio = await this.db
+            .collection("audio")
+            .findOne({ _id: new ObjectId(audioId) })
+        if (audio === null) {
             throw new BadRequestException("해당 영상이 존재하지가 않습니다")
         }
+
         return audio
     }
 
-    async updateMediaViewCount(mediaId: string, count: number) {
+    async updateAudioViewCount(mediaId: string, count: number) {
         let audio
         try {
             // media = await this.findOneOrFail({ mediaId: mediaId })
@@ -59,7 +59,7 @@ export class MediaRepository {
         }
     }
 
-    async searchMedia(page: number, keyword: string = "") {
+    async searchAudio(page: number, keyword: string = "") {
         const skip = Math.max(page - 1, 0) * 20
         const take = 20
         const result = await this.db
@@ -76,7 +76,7 @@ export class MediaRepository {
         }
     }
 
-    async deleteMedia(userId: string, mediaId: string) {
+    async deleteAudio(userId: string, mediaId: string) {
         const { deletedCount } = await this.db
             .collection("audio")
             .deleteOne({ userId, _id: new ObjectId(mediaId) })

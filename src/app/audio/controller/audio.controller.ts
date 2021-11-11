@@ -32,38 +32,34 @@ import * as concat from "concat-stream"
 import { JwtAuthGuard } from "src/shared/guards/role.guard"
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { ValidationPipe } from "../../../shared/pipes/validation.pipe"
-import { MediaService } from "../service/media.service"
-import { UploadMediaDto, UpdateMediaDto } from "../dto"
+import { AudioService } from "../service/audio.service"
+import { UploadAudioDto, UpdateAudioDto } from "../dto"
 
-@ApiTags("v1/media")
-@Controller("v1/media")
-export class MediaController {
-    constructor(private readonly mediaService: MediaService) {}
+@ApiTags("v1/audio")
+@Controller("v1/audio")
+export class AudioController {
+    constructor(private readonly audioService: AudioService) {}
 
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard("jwt"))
+    // @ApiBearerAuth()
+    // @UseGuards(AuthGuard("jwt"))
     @Post("")
     @UseInterceptors(FileInterceptor("file"))
-    @ApiOperation({ summary: "upload media" })
+    @ApiOperation({ summary: "음원 업로드" })
     @ApiConsumes("multipart/form-data")
-    @ApiBody({ type: UploadMediaDto })
-    async uploadMedia(
-        @Headers("authorization") bearer: string,
+    @ApiBody({ type: UploadAudioDto })
+    async uploadAudio(
+        // @Headers("authorization") bearer: string,
         @UploadedFile() file,
-        @Body() body: UploadMediaDto,
+        @Body() body: UploadAudioDto,
     ) {
-        return this.mediaService.uploadMedia(
-            jwtManipulationService.decodeJwtToken(bearer, "id"),
-            file,
-            body,
-        )
+        return this.audioService.uploadAudio("test", file, body)
     }
 
-    @Get(":mediaId")
-    @ApiOperation({ summary: "get media" })
-    async getMedia(
+    @Get(":audioId")
+    @ApiOperation({ summary: "음원 가져오기" })
+    async getAudio(
         @Ip() ip: string,
-        @Param("mediaId") mediaId: string,
+        @Param("audioId") audioId: string,
         @Headers("authorization") bearer: string,
     ) {
         let userId: string | undefined = undefined
@@ -72,41 +68,41 @@ export class MediaController {
         } catch {
             userId = undefined
         }
-        return this.mediaService.getMedia(mediaId, ip, userId)
+        return this.audioService.getAudio(audioId, ip, userId)
     }
 
     @Get("/search")
-    @ApiOperation({ summary: "get all media" })
-    async searchMedia(@Query() { page, keyword }) {
-        return this.mediaService.searchMedia(page, keyword)
+    @ApiOperation({ summary: "음원을 검색" })
+    async searchAudio(@Query() { page, keyword }) {
+        return this.audioService.searchAudio(page, keyword)
     }
 
-    @Delete(":mediaId")
+    @Delete(":audioId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "영상을 삭제" })
+    @ApiOperation({ summary: "음원을 삭제" })
     async deleteMedia(
         @Headers("authorization") bearer: string,
-        @Param("mediaId") mediaId: string,
+        @Param("audioId") audioId: string,
     ) {
-        return this.mediaService.deleteMedia(
+        return this.audioService.deleteAudio(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
-            mediaId,
+            audioId,
         )
     }
 
-    @Patch(":mediaId")
+    @Patch(":audioId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "영상을 수정" })
+    @ApiOperation({ summary: "음원 제목을 수정" })
     async updateMedia(
         @Headers("authorization") bearer: string,
-        @Param("mediaId") mediaId: string,
-        @Body() body: UpdateMediaDto,
+        @Param("audioId") audioId: string,
+        @Body() body: UpdateAudioDto,
     ) {
-        return this.mediaService.updateMedia(
+        return this.audioService.updateAudio(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
-            mediaId,
+            audioId,
             body,
         )
     }
