@@ -14,15 +14,7 @@ import { validate } from "class-validator"
 import { JwtPayload } from "jsonwebtoken"
 
 // Local files
-// import {
-//     CreateUserDto,
-//     CreateAuthCodeDto,
-//     CheckAuthCodeDto,
-//     LoginDto,
-//     FindIdDto,
-//     ResetPasswordDto,
-//     DeleteUserDto,
-// } from "../dto"
+import { UpdateFolderDto } from "../dto"
 import { JwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { UserRepository } from "src/shared/repositories/user.repository"
 import { FolderRepository } from "src/shared/repositories/folder.repository"
@@ -46,6 +38,25 @@ export class FolderService {
         return {
             status: "ok",
             message: "정상적으로 폴더를 생성하였습니다",
+        }
+    }
+
+    async updateFolder(
+        userId: string,
+        folderId: string,
+        dto: UpdateFolderDto,
+    ): Promise<StatusOk> {
+        dto.folderName
+        const getFolder = await this.folderRepository.getFolderByFolderId(
+            folderId,
+        )
+        if (getFolder) {
+            throw new BadRequestException("Folder id is existed")
+        }
+        await this.folderRepository.updateFolder(userId, dto.folderName)
+        return {
+            status: "ok",
+            message: "정상적으로 폴더를 수정하였습니다",
         }
     }
 

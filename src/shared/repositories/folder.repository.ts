@@ -8,7 +8,7 @@ import {
     Module,
 } from "@nestjs/common"
 
-import { Repository, EntityRepository } from "typeorm"
+import { Repository, EntityRepository, ObjectID } from "typeorm"
 import * as crypto from "bcryptjs"
 import { Db, ObjectId } from "mongodb"
 
@@ -58,6 +58,12 @@ export class FolderRepository {
                 folderId: new ObjectId(folderId),
                 audioId: new ObjectId(audioId),
             })
+            await this.db
+                .collection("folder")
+                .updateOne(
+                    { _id: new ObjectID(folderId) },
+                    { $set: { updatedAt: new Date() } },
+                )
         } catch {
             throw new Error("이미 해당 음원이 폴더에 존재합니다")
         }
@@ -71,6 +77,12 @@ export class FolderRepository {
         if (deletedCount === 0) {
             throw new Error("해당 음원이 폴더에 존재하지 않습니다")
         }
+        await this.db
+            .collection("folder")
+            .updateOne(
+                { _id: new ObjectId(folderId) },
+                { $set: { updatedAt: new Date() } },
+            )
     }
 
     async delFolder(folderId: string) {
@@ -83,5 +95,20 @@ export class FolderRepository {
         await this.db.collection("file").deleteMany({
             folderId: new ObjectId(folderId),
         })
+    }
+
+    async updateFolder(folderId: string, folderName: string) {
+        const { modifiedCount } = await this.db.collection("folder").updateOne(
+            { _id: new ObjectId(folderId) },
+            {
+                $set: {
+                    folderName,
+                    updatedAt: new Date(),
+                },
+            },
+        )
+        if (modifiedCount === 0) {
+            throw new Error("해당 폴더가 존재하지 않습니다")
+        }
     }
 }

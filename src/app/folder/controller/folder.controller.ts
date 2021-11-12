@@ -19,7 +19,7 @@ import { AuthGuard } from "@nestjs/passport"
 import { FolderService } from "../service/folder.service"
 import { JwtAuthGuard } from "src/shared/guards/role.guard"
 import { ValidationPipe } from "../../../shared/pipes/validation.pipe"
-import { CreateFolderDto } from "../dto/create-forder.dto"
+import { CreateFolderDto, UpdateFolderDto } from "../dto"
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 
 @ApiTags("v1/folder")
@@ -38,6 +38,22 @@ export class AuthController {
         return this.folderService.createFolder(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             data.folderName,
+        )
+    }
+
+    @Patch("/:folderId")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "Create folder" })
+    async updateFolder(
+        @Headers("authorization") bearer: string,
+        @Param("folderId") folderId: string,
+        @Body() data: UpdateFolderDto,
+    ) {
+        return this.folderService.updateFolder(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            folderId,
+            data,
         )
     }
 
