@@ -12,25 +12,32 @@ import {
     Controller,
     UsePipes,
 } from "@nestjs/common"
-import { ApiBearerAuth, ApiTags, ApiOperation } from "@nestjs/swagger"
+import {
+    ApiBearerAuth,
+    ApiTags,
+    ApiOperation,
+    ApiQuery,
+    ApiBody,
+} from "@nestjs/swagger"
 import { AuthGuard } from "@nestjs/passport"
 
 // Local files
 import { FolderService } from "../service/folder.service"
 import { JwtAuthGuard } from "src/shared/guards/role.guard"
 import { ValidationPipe } from "../../../shared/pipes/validation.pipe"
-import { CreateFolderDto, UpdateFolderDto } from "../dto"
+import { CreateFolderDto, UpdateFolderDto, SearchFolderDto } from "../dto"
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 
 @ApiTags("v1/folder")
 @Controller("v1/folder")
-export class AuthController {
+export class FolderController {
     constructor(private readonly folderService: FolderService) {}
 
     @Post("")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "Create folder" })
+    @ApiOperation({ summary: "폴더를 생성" })
+    @ApiBody({ type: CreateFolderDto })
     async createFolder(
         @Headers("authorization") bearer: string,
         @Body() data: CreateFolderDto,
@@ -44,7 +51,7 @@ export class AuthController {
     @Patch("/:folderId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "Create folder" })
+    @ApiOperation({ summary: "폴더를 수정" })
     async updateFolder(
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
@@ -60,7 +67,7 @@ export class AuthController {
     @Post("/:folderId/:audioId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "Add audio to folder" })
+    @ApiOperation({ summary: "음원을 폴더에 추가" })
     async addAudioToFolder(
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
@@ -76,7 +83,7 @@ export class AuthController {
     @Delete("/:folderId/:audioId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "Delete audio to folder" })
+    @ApiOperation({ summary: "폴더에서 음원을 삭제" })
     async delAudioToFolder(
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
@@ -92,7 +99,7 @@ export class AuthController {
     @Delete("/:folderId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "Delete audio to folder" })
+    @ApiOperation({ summary: "폴더를 삭제" })
     async delFolder(
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
@@ -104,7 +111,7 @@ export class AuthController {
     }
 
     @Get("/:folderId")
-    @ApiOperation({ summary: "Create folder" })
+    @ApiOperation({ summary: "폴더의 정보 가져오기" })
     async getFolder(
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
@@ -113,8 +120,9 @@ export class AuthController {
     }
 
     @Get("/search")
-    @ApiOperation({ summary: "Search folder" })
+    @ApiQuery({ type: SearchFolderDto })
+    @ApiOperation({ summary: "폴더를 검색하기" })
     async searchFolder(@Query() { keyword, creator, page }) {
-        return this.folderService.searchFolder(keyword, creator, page)
+        return this.folderService.searchFolder(keyword, creator, page || 1)
     }
 }

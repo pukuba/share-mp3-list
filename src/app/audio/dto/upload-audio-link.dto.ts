@@ -17,7 +17,8 @@ export class UploadAudioByLinkDto {
 
     @ApiProperty({
         required: true,
-        example: "filter option",
+        example: "Default",
+        enum: ["Default", "NightCore", "Stereo"],
     })
     @IsNotEmpty()
     @Matches(
@@ -26,5 +27,5 @@ export class UploadAudioByLinkDto {
             .join("|")}$`,
         "i",
     )
-    filter: string
+    filter: "Default" | "NightCore" | "Stereo"
 }

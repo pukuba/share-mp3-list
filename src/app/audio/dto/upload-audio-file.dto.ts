@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-
+import { File } from "src/shared/services/type"
 import { IsNotEmpty, Length, Matches } from "class-validator"
 
 enum Filter {
@@ -19,7 +19,8 @@ export class UploadAudioByFileDto {
 
     @ApiProperty({
         required: true,
-        example: "filter option",
+        example: "Default",
+        enum: ["Default", "NightCore", "Stereo"],
     })
     @IsNotEmpty()
     @Matches(
@@ -28,5 +29,12 @@ export class UploadAudioByFileDto {
             .join("|")}$`,
         "i",
     )
-    filter: string
+    filter: "Default" | "NightCore" | "Stereo"
+
+    @ApiProperty({
+        required: true,
+        type: "string",
+        format: "binary",
+    })
+    file: File
 }

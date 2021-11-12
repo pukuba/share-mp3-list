@@ -10,6 +10,7 @@ import { ConfigModule } from "@nestjs/config"
 import { AuthService } from "./app/auth/service/auth.service"
 import { RedisService } from "./shared/services/redis.service"
 import { DatabaseModule } from "./shared/database/mongodb.module"
+import { FolderModule } from "./app/folder/folder.module"
 import { AudioModule } from "./app/audio/audio.module"
 @Global()
 @Module({
@@ -20,6 +21,7 @@ import { AudioModule } from "./app/audio/audio.module"
         }),
         AuthModule,
         AudioModule,
+        FolderModule,
     ],
     controllers: [AppController],
     providers: [RedisService],

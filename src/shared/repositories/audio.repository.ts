@@ -26,7 +26,7 @@ export class AudioRepository {
         @Inject("DATABASE_CONNECTION")
         private db: Db,
     ) {}
-    async uploadAudio(userId: string, dto: UploadAudioByFileDto, url: string) {
+    async uploadAudio(userId: string, dto, url: string) {
         const audio = {
             userId: userId,
             url,

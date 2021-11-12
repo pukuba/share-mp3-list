@@ -23,6 +23,7 @@ import {
     ApiOperation,
     ApiBody,
     ApiConsumes,
+    ApiQuery,
 } from "@nestjs/swagger"
 
 // Other dependencies
@@ -37,6 +38,7 @@ import {
     UploadAudioByFileDto,
     UpdateAudioDto,
     UploadAudioByLinkDto,
+    SearchAudioDto,
 } from "../dto"
 
 @ApiTags("v1/audio")
@@ -85,6 +87,7 @@ export class AudioController {
     }
 
     @Get("/search")
+    @ApiQuery({ type: SearchAudioDto })
     @ApiOperation({ summary: "음원을 검색" })
     async searchAudio(@Query() { page, keyword }) {
         return this.audioService.searchAudio(page, keyword)
