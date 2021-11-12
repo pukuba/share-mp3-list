@@ -24,6 +24,18 @@ import { configService } from "../services/config.service"
                         db
                             .collection("user")
                             .createIndex({ username: 1 }, { unique: true }),
+                        db
+                            .collection("folder")
+                            .createIndex(
+                                { userId: 1, folderName: 1 },
+                                { unique: true },
+                            ),
+                        db
+                            .collection("file")
+                            .createIndex(
+                                { folderId: 1, audioId: 1 },
+                                { unique: true },
+                            ),
                     ])
 
                     return db
