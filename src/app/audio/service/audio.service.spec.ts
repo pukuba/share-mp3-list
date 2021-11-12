@@ -16,19 +16,20 @@ import { RedisService } from "src/shared/Services/redis.service"
 import { AudioModule } from "../audio.module"
 import { UserRepository } from "src/shared/repositories/user.repository"
 import { AudioRepository } from "src/shared/repositories/audio.repository"
-describe("MediaService", () => {
+import { ObjectId } from "bson"
+describe("Audio Service", () => {
     let service: AudioService
     let userDb: UserRepository
-    let mediaDb: AudioRepository
+    let audioDb: AudioRepository
     let token: string
-    let mediaId: string
+    let audioId: ObjectId
     before(async () => {
         const module = await Test.createTestingModule({
             imports: [AudioModule],
         }).compile()
         service = module.get<AudioService>(AudioService)
         userDb = module.get<UserRepository>(UserRepository)
-        mediaDb = module.get<AudioRepository>(AudioRepository)
+        audioDb = module.get<AudioRepository>(AudioRepository)
         await userDb.createUser({
             username: "test",
             password: "testtest1@@",
@@ -41,67 +42,61 @@ describe("MediaService", () => {
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
         })
     })
-    describe("uploadMedia", () => {
-        it("should be return MediaEntity", async () => {
+    describe("upload Audio", () => {
+        it("should be return AudioInfo", async () => {
             const file = {
-                buffer: fs.readFileSync("test/sample-mp4-file-small.mp4"),
+                buffer: fs.readFileSync("test/church.mp3"),
                 fieldname: "file",
-                originalname: "sample-mp4-file-small.mp4",
+                originalname: "chruch.mp3",
                 encoding: "",
-                mimetype: "video/mp4",
-                name: "sample-mp4-file-small.mp4",
+                mimetype: "audio/mpeg",
+                name: "chruch.mp3",
                 size: 1024,
             }
-            const {
-                title,
-                description,
-                mediaId: id,
-            } = await service.uploadMedia("test", file, {
-                title: "test",
-                description: "test",
-            })
+            const { title, audioId: id } = await service.uploadAudioByFile(
+                "test",
+                file,
+                {
+                    name: "test",
+                    filter: "Default",
+                },
+            )
             equal(title, "test")
-            equal(description, "test")
-            mediaId = id
+            audioId = id
         })
     })
 
-    describe("getMedia", () => {
-        it("should be return MediaEntity", async () => {
-            const media = await service.getMedia(mediaId, "::1", "test")
+    describe("getAudio", () => {
+        it("should be return AudioInfo", async () => {
+            const media = await service.getAudio(audioId.toString(), "::1")
             equal(media.userId, "test")
-            equal(media.mediaId, mediaId)
-            equal(media.views, 1)
+            equal(media._id.toString(), audioId.toString())
         })
         it("should be return BadRequestException Error", async () => {
             try {
-                await service.getMedia("test1234", "::1", "test")
+                await service.getAudio("111111111111111111111111", "::1")
             } catch (e) {
-                equal(e.message, "해당 영상이 존재하지가 않습니다")
+                equal(e.message, "해당 음원이 존재하지가 않습니다")
             }
         })
     })
 
-    describe("searchMedia", () => {
+    describe("searchAudio", () => {
         it("should be return pageInfo", async () => {
-            const pageInfo = await service.searchMedia(1, "t")
+            const pageInfo = await service.searchAudio(1, "t")
             equal(pageInfo.count, 1)
-            equal(pageInfo.data[0].mediaId, mediaId)
             equal(pageInfo.data[0].title.includes("t"), true)
         })
     })
 
-    describe("deleteMedia", () => {
+    describe("deleteAudio", () => {
         it("should be return void", async () => {
-            const res = await service.deleteMedia("test", mediaId)
+            const res = await service.deleteAudio("test", audioId.toString())
             equal(res, undefined)
         })
     })
 
     after(async () => {
-        await Promise.all([
-            mediaDb.query("delete from media;"),
-            mediaDb.query("delete from user;"),
-        ])
+        await userDb.deleteUser({ id: "test", password: "testtest1@@" })
     })
 })

@@ -13,7 +13,11 @@ import { Db, ObjectId, ObjectID } from "mongodb"
 import { Repository, EntityRepository, Like } from "typeorm"
 
 // Local files
-import { UpdateAudioDto, UploadAudioDto } from "src/app/audio/dto"
+import {
+    UpdateAudioDto,
+    UploadAudioByFileDto,
+    UploadAudioByLinkDto,
+} from "src/app/audio/dto"
 import { configService } from "../services/config.service"
 
 @Injectable()
@@ -22,16 +26,20 @@ export class AudioRepository {
         @Inject("DATABASE_CONNECTION")
         private db: Db,
     ) {}
-    async uploadAudio(userId: string, dto: UploadAudioDto, url: string) {
+    async uploadAudio(userId: string, dto: UploadAudioByFileDto, url: string) {
         const audio = {
             userId: userId,
             url,
-            name: dto.name,
+            title: dto.name,
             views: 0,
         }
 
         try {
-            await this.db.collection("audio").insertOne(audio)
+            const id = await this.db
+                .collection("audio")
+                .insertOne(audio)
+                .then(({ insertedId }) => insertedId)
+            return { ...audio, audioId: id }
         } catch (err) {
             throw new UnprocessableEntityException(err.errmsg)
         }
@@ -42,7 +50,7 @@ export class AudioRepository {
             .collection("audio")
             .findOne({ _id: new ObjectId(audioId) })
         if (audio === null) {
-            throw new BadRequestException("해당 영상이 존재하지가 않습니다")
+            throw new BadRequestException("해당 음원이 존재하지가 않습니다")
         }
 
         return audio
@@ -62,24 +70,28 @@ export class AudioRepository {
     async searchAudio(page: number, keyword: string = "") {
         const skip = Math.max(page - 1, 0) * 20
         const take = 20
-        const result = await this.db
-            .collection("audio")
-            .find({
-                name: {
-                    $regex: new RegExp(keyword, "i"),
-                },
-            })
-            .toArray()
+        const [result, count] = await Promise.all([
+            this.db
+                .collection("audio")
+                .find({ title: { $regex: new RegExp(keyword, "i") } })
+                .skip(skip)
+                .limit(take)
+                .toArray(),
+            this.db
+                .collection("audio")
+                .find({ title: { $regex: new RegExp(keyword, "i") } })
+                .count(),
+        ])
         return {
             data: result,
-            count: 1,
+            count,
         }
     }
 
-    async deleteAudio(userId: string, mediaId: string) {
+    async deleteAudio(userId: string, audioId: string) {
         const { deletedCount } = await this.db
             .collection("audio")
-            .deleteOne({ userId, _id: new ObjectId(mediaId) })
+            .deleteOne({ userId, _id: new ObjectId(audioId) })
         if (deletedCount === 0) {
             throw new NotFoundException("해당 음원이 존재하지 않습니다")
         }

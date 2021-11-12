@@ -33,42 +33,55 @@ import { JwtAuthGuard } from "src/shared/guards/role.guard"
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { ValidationPipe } from "../../../shared/pipes/validation.pipe"
 import { AudioService } from "../service/audio.service"
-import { UploadAudioDto, UpdateAudioDto } from "../dto"
+import {
+    UploadAudioByFileDto,
+    UpdateAudioDto,
+    UploadAudioByLinkDto,
+} from "../dto"
 
 @ApiTags("v1/audio")
 @Controller("v1/audio")
 export class AudioController {
     constructor(private readonly audioService: AudioService) {}
 
-    // @ApiBearerAuth()
-    // @UseGuards(AuthGuard("jwt"))
-    @Post("")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @Post("/file")
     @UseInterceptors(FileInterceptor("file"))
     @ApiOperation({ summary: "음원 업로드" })
     @ApiConsumes("multipart/form-data")
-    @ApiBody({ type: UploadAudioDto })
-    async uploadAudio(
-        // @Headers("authorization") bearer: string,
+    @ApiBody({ type: UploadAudioByFileDto })
+    async uploadAudioByFile(
+        @Headers("authorization") bearer: string,
         @UploadedFile() file,
-        @Body() body: UploadAudioDto,
+        @Body() body: UploadAudioByFileDto,
     ) {
-        return this.audioService.uploadAudio("test", file, body)
+        return this.audioService.uploadAudioByFile(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            file,
+            body,
+        )
+    }
+
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @Post("/link")
+    @ApiOperation({ summary: "음원 업로드" })
+    @ApiBody({ type: UploadAudioByLinkDto })
+    async uploadAudioByLink(
+        @Headers("authorization") bearer: string,
+        @Body() body: UploadAudioByLinkDto,
+    ) {
+        return this.audioService.uploadAudioByLink(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            body,
+        )
     }
 
     @Get(":audioId")
     @ApiOperation({ summary: "음원 가져오기" })
-    async getAudio(
-        @Ip() ip: string,
-        @Param("audioId") audioId: string,
-        @Headers("authorization") bearer: string,
-    ) {
-        let userId: string | undefined = undefined
-        try {
-            userId = jwtManipulationService.decodeJwtToken(bearer, "id")
-        } catch {
-            userId = undefined
-        }
-        return this.audioService.getAudio(audioId, ip, userId)
+    async getAudio(@Ip() ip: string, @Param("audioId") audioId: string) {
+        return this.audioService.getAudio(audioId, ip)
     }
 
     @Get("/search")
@@ -88,22 +101,6 @@ export class AudioController {
         return this.audioService.deleteAudio(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             audioId,
-        )
-    }
-
-    @Patch(":audioId")
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "음원 제목을 수정" })
-    async updateMedia(
-        @Headers("authorization") bearer: string,
-        @Param("audioId") audioId: string,
-        @Body() body: UpdateAudioDto,
-    ) {
-        return this.audioService.updateAudio(
-            jwtManipulationService.decodeJwtToken(bearer, "id"),
-            audioId,
-            body,
         )
     }
 }

@@ -16,11 +16,19 @@ import { AudioRepository } from "src/shared/repositories/audio.repository"
 import { RedisService } from "src/shared/services/redis.service"
 import { configService } from "src/shared/services/config.service"
 import { BlacklistMiddleware } from "src/shared/middleware/blacklist.middleware"
+import { FFmpegService } from "src/shared/services/ffmpeg.service"
 import { DatabaseModule } from "../../shared/database/mongodb.module"
 @Module({
     imports: [DatabaseModule],
     controllers: [AudioController],
-    providers: [AudioService, AwsService, RedisService, AudioRepository],
+    providers: [
+        AudioService,
+        AwsService,
+        RedisService,
+        FFmpegService,
+        AudioRepository,
+        UserRepository,
+    ],
     exports: [AudioService],
 })
 export class AudioModule {

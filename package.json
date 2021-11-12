@@ -15,7 +15,7 @@
         "start:prod": "node dist/main",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "test": "NODE_PATH=./ ts-mocha --timeout 100000 -p ./tsconfig.json src/**/*spec.ts --exit",
-        "test:latest": "NODE_PATH=./ ts-mocha --timeout 100000 -p ./tsconfig.json src/app/media/service/*spec.ts --exit",
+        "test:latest": "NODE_PATH=./ ts-mocha --timeout 100000 -p ./tsconfig.json src/app/audio/service/*spec.ts --exit",
         "test:watch": "jest --watch",
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -72,7 +72,9 @@
         "shortid": "^2.2.16",
         "swagger-ui-express": "^4.1.6",
         "ts-mocha": "^8.0.0",
-        "typeorm": "^0.2.37"
+        "typeorm": "^0.2.37",
+        "youtube-mp3-downloader": "^0.7.8",
+        "ytdl-core": "^4.9.1"
     },
     "devDependencies": {
         "@nestjs/cli": "^8.0.0",

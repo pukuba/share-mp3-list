@@ -56,7 +56,7 @@ export class UserRepository {
     async createUser(dto: CreateUserDto): Promise<void> {
         const newUser = {
             username: dto.username,
-            password: dto.password,
+            password: crypto.hashSync(dto.password, crypto.genSaltSync(10)),
             phoneNumber: dto.phoneNumber,
             id: dto.id,
         }

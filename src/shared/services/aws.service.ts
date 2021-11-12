@@ -20,12 +20,12 @@ export class AwsService {
         })
     }
 
-    async uploadFile(fileName: string, directory: "audio", buffer: Buffer) {
+    async uploadFile(fileName: string, directory: "audio", file: string) {
         await this.s3Instance()
             .upload({
                 Bucket: configService.getEnv("AWS_BUCKET"),
                 Key: `${directory}/${fileName}`,
-                Body: buffer,
+                Body: createReadStream(file),
                 ACL: "public-read",
             })
             .promise()
