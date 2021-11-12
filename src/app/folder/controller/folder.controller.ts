@@ -60,7 +60,7 @@ export class AuthController {
     @Delete("/:folderId/:audioId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "Add audio to folder" })
+    @ApiOperation({ summary: "Delete audio to folder" })
     async delAudioToFolder(
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
@@ -70,6 +70,20 @@ export class AuthController {
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             folderId,
             audioId,
+        )
+    }
+
+    @Delete("/:folderId")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "Delete audio to folder" })
+    async delFolder(
+        @Headers("authorization") bearer: string,
+        @Param("folderId") folderId: string,
+    ) {
+        return this.folderService.delFolder(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            folderId,
         )
     }
 }

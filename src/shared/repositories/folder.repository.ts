@@ -72,4 +72,16 @@ export class FolderRepository {
             throw new Error("해당 음원이 폴더에 존재하지 않습니다")
         }
     }
+
+    async delFolder(folderId: string) {
+        const { deletedCount } = await this.db.collection("folder").deleteOne({
+            _id: new ObjectId(folderId),
+        })
+        if (deletedCount === 0) {
+            throw new Error("해당 폴더가 존재하지 않습니다")
+        }
+        await this.db.collection("file").deleteMany({
+            folderId: new ObjectId(folderId),
+        })
+    }
 }

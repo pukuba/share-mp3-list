@@ -95,6 +95,9 @@ export class AudioRepository {
         if (deletedCount === 0) {
             throw new NotFoundException("해당 음원이 존재하지 않습니다")
         }
+        await this.db
+            .collection("file")
+            .deleteMany({ audioId: new ObjectId(audioId) })
     }
 
     // async patchMedia(userId: string, mediaId: string, dto: UpdateMediaDto) {
