@@ -121,4 +121,16 @@ export class FolderService {
             message: "정상적으로 폴더가 삭제되었습니다",
         }
     }
+
+    async getFolder(userId: string, folderId: string) {
+        const getFolder = await this.folderRepository.getFolderByFolderId(
+            folderId,
+        )
+        if (!getFolder || getFolder?.userId !== userId) {
+            throw new BadRequestException(
+                "폴더가 존재하지 않거나 본인의 폴더가 아닙니다",
+            )
+        }
+        return await this.folderRepository.getFolderInfo(folderId)
+    }
 }

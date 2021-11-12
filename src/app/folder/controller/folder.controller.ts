@@ -102,4 +102,18 @@ export class AuthController {
             folderId,
         )
     }
+
+    @Get("/:folderId")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "Create folder" })
+    async getFolder(
+        @Headers("authorization") bearer: string,
+        @Param("folderId") folderId: string,
+    ) {
+        return this.folderService.getFolder(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            folderId,
+        )
+    }
 }

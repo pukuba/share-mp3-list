@@ -32,6 +32,39 @@ export class FolderRepository {
         }
     }
 
+    async getFolderList(userId: string) {}
+
+    async getFolderInfo(folderId: string) {
+        const folder = await this.db.collection("folder").findOne({
+            _id: new ObjectId(folderId),
+        })
+        if (folder === null) {
+            throw new Error("해당 폴더가 존재하지 않습니다")
+        }
+        const songList = await this.db
+            .collection("file")
+            .find({
+                folderId: new ObjectId(folderId),
+            })
+            .toArray()
+
+        const audios = await this.db
+            .collection("audio")
+            .find({
+                _id: {
+                    $in: songList.map((song) => new ObjectId(song.audioId)),
+                },
+            })
+            .toArray()
+
+        return {
+            creator: folder.userId,
+            folderName: folder.folderName,
+            folderId: folder._id,
+            audioList: audios,
+        }
+    }
+
     async getFolderByFolderId(folderId: string) {
         const folder = await this.db.collection("folder").findOne({
             _id: new ObjectId(folderId),
