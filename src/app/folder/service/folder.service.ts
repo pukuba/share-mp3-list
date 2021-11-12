@@ -122,15 +122,17 @@ export class FolderService {
         }
     }
 
-    async getFolder(userId: string, folderId: string) {
+    async getFolder(folderId: string) {
         const getFolder = await this.folderRepository.getFolderByFolderId(
             folderId,
         )
-        if (!getFolder || getFolder?.userId !== userId) {
-            throw new BadRequestException(
-                "폴더가 존재하지 않거나 본인의 폴더가 아닙니다",
-            )
+        if (!getFolder) {
+            throw new BadRequestException("폴더가 존재하지 않습니다")
         }
         return await this.folderRepository.getFolderInfo(folderId)
+    }
+
+    async searchFolder(keyword: string, creator: string, page: number) {
+        await this.folderRepository.searchFolder(keyword, creator, page)
     }
 }

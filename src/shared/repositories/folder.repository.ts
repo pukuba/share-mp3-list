@@ -144,4 +144,28 @@ export class FolderRepository {
             throw new Error("해당 폴더가 존재하지 않습니다")
         }
     }
+
+    async searchFolder(keyword: string, userId: string, page: number) {
+        let query = {}
+        if (keyword) {
+            query = {
+                folderName: {
+                    $regex: new RegExp(keyword, "i"),
+                },
+            }
+        }
+        if (userId) {
+            query = {
+                ...query,
+                userId,
+            }
+        }
+        const folderList = await this.db
+            .collection("folder")
+            .find(query)
+            .skip(page * 10)
+            .limit(10)
+            .toArray()
+        return folderList
+    }
 }
