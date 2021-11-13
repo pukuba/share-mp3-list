@@ -22,6 +22,7 @@ export class FolderRepository {
         const { insertedId } = await this.db.collection("folder").insertOne({
             userId,
             folderName,
+            like: 0,
             createdAt: new Date(),
             updatedAt: new Date(),
         })
@@ -31,8 +32,6 @@ export class FolderRepository {
             folderId: insertedId,
         }
     }
-
-    async getFolderList(userId: string) {}
 
     async getFolderInfo(folderId: string) {
         const folder = await this.db.collection("folder").findOne({

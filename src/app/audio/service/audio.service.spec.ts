@@ -59,6 +59,7 @@ describe("Audio Service", () => {
                 {
                     name: "test",
                     filter: "Default",
+                    file,
                 },
             )
             equal(title, "test")
