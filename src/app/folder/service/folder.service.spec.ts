@@ -97,8 +97,25 @@ describe("Audio Service", () => {
         })
     })
 
+    describe("Del Audio to Folder", () => {
+        it("should be return status: ok", async () => {
+            const res = await service.delAudioToFolder(
+                "test",
+                folderId.toString(),
+                audioId.toString(),
+            )
+            equal(res.status, "ok")
+        })
+    })
+
+    describe("Del Folder", () => {
+        it("should be return status: ok", async () => {
+            const res = await service.delFolder("test", folderId.toString())
+            equal(res.status, "ok")
+        })
+    })
+
     after(async () => {
         await userDb.deleteUser({ id: "test", password: "testtest1@@" })
-        // await audioDb.deleteAudio("test", audioId.toString())
     })
 })
