@@ -133,6 +133,17 @@ export class FolderService {
     }
 
     async searchFolder(keyword: string, creator: string, page: number) {
-        await this.folderRepository.searchFolder(keyword, creator, page)
+        const res = await this.folderRepository.searchFolder(
+            keyword,
+            creator,
+            page,
+        )
+        return {
+            pageInfo: {
+                count: res.count,
+                page: page,
+            },
+            data: res.data,
+        }
     }
 }

@@ -8,7 +8,7 @@ import {
     Module,
 } from "@nestjs/common"
 
-import { Repository, EntityRepository, ObjectID } from "typeorm"
+import { Repository, EntityRepository } from "typeorm"
 import * as crypto from "bcryptjs"
 import { Db, ObjectId } from "mongodb"
 
@@ -60,7 +60,16 @@ export class FolderRepository {
             creator: folder.userId,
             folderName: folder.folderName,
             folderId: folder._id,
-            audioList: audios,
+            audioList: audios.map((audio) => {
+                return {
+                    audioId: audio._id,
+                    audioName: audio.title,
+                    audioUrl: audio.url,
+                    audioViews: audio.views,
+                    uploader: audio.userId,
+                }
+            }),
+            likeCount: folder.like,
         }
     }
 
@@ -93,10 +102,11 @@ export class FolderRepository {
             await this.db
                 .collection("folder")
                 .updateOne(
-                    { _id: new ObjectID(folderId) },
+                    { _id: new ObjectId(folderId) },
                     { $set: { updatedAt: new Date() } },
                 )
-        } catch {
+        } catch (e) {
+            console.log(e)
             throw new Error("이미 해당 음원이 폴더에 존재합니다")
         }
     }
@@ -159,12 +169,15 @@ export class FolderRepository {
                 userId,
             }
         }
-        const folderList = await this.db
-            .collection("folder")
-            .find(query)
-            .skip(page * 10)
-            .limit(10)
-            .toArray()
-        return folderList
+        const [folderList, cnt] = await Promise.all([
+            this.db
+                .collection("folder")
+                .find(query)
+                .skip((Math.max(page - 1), 0) * 10)
+                .limit(10)
+                .toArray(),
+            this.db.collection("folder").find(query).count(),
+        ])
+        return { count: cnt, data: folderList }
     }
 }

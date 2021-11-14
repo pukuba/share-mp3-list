@@ -123,6 +123,10 @@ export class FolderController {
     @ApiQuery({ type: SearchFolderDto })
     @ApiOperation({ summary: "폴더를 검색하기" })
     async searchFolder(@Query() { keyword, creator, page }) {
-        return this.folderService.searchFolder(keyword, creator, page || 1)
+        return this.folderService.searchFolder(
+            keyword,
+            creator || "",
+            page || 1,
+        )
     }
 }
