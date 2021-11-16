@@ -20,7 +20,7 @@ export class UploadAudioByFileDto {
     @ApiProperty({
         required: true,
         example: "Default",
-        enum: ["Default", "NightCore", "Stereo"],
+        enum: ["Default", "NightCore", "Stereo", "NoiseFilter"],
     })
     @IsNotEmpty()
     @Matches(
@@ -29,7 +29,7 @@ export class UploadAudioByFileDto {
             .join("|")}$`,
         "i",
     )
-    filter: "Default" | "NightCore" | "Stereo"
+    filter: "Default" | "NightCore" | "Stereo" | "NoiseFilter"
 
     @ApiProperty({
         required: true,

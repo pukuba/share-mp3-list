@@ -33,19 +33,9 @@ export class FFmpegService {
         if (!downloadURL) {
             throw new Error("no audio found")
         }
-        if (filter === "Default") {
-            filter = ""
-        } else if (filter === "Stereo") {
-            filter = ` -i ./test/church.mp3 -filter_complex \
-            '[0] [1] afir=dry=10:wet=10 [reverb]; [0] [reverb] amix=inputs=2:weights=1' `
-        } else if (filter === "NightCore") {
-            filter = `-filter:a "atempo=1.06,asetrate=44100*1.25"`
-        } else {
-            filter = ""
-        }
         try {
             await exec(`
-                ffmpeg -i '${downloadURL}' ${filter} \
+                ffmpeg -i '${downloadURL}' ${this.filtering(filter)} \
                 -c:a mp3 -strict -2 -b:a 192k \
                 test/${filename}-1.mp3 -y
             `)
@@ -57,19 +47,9 @@ export class FFmpegService {
 
     async filterByFile(file: Buffer, filename: string, filter: string) {
         fs.writeFileSync(`test/${filename}.mp3`, file, "binary")
-        if (filter === "Default") {
-            filter = ""
-        } else if (filter === "Stereo") {
-            filter = ` -i ./test/church.mp3 -filter_complex \
-            '[0] [1] afir=dry=10:wet=10 [reverb]; [0] [reverb] amix=inputs=2:weights=1' `
-        } else if (filter === "NightCore") {
-            filter = `-filter:a "atempo=1.06,asetrate=44100*1.25"`
-        } else {
-            filter = ""
-        }
         try {
             await exec(`
-                ffmpeg -i test/${filename}.mp3 ${filter} \
+                ffmpeg -i test/${filename}.mp3 ${this.filtering(filter)} \
                 -c:a mp3 -strict -2 -b:a 192k \
                 test/${filename}-1.mp3 -y
             `)
@@ -82,5 +62,21 @@ export class FFmpegService {
         try {
             await deleteFile(`test/${filename}.mp3`)
         } catch {}
+    }
+
+    private filtering(filter: string) {
+        if (filter === "Default") {
+            filter = ""
+        } else if (filter === "Stereo") {
+            filter = ` -i ./test/church.mp3 -filter_complex \
+            '[0] [1] afir=dry=10:wet=10 [reverb]; [0] [reverb] amix=inputs=2:weights=1' `
+        } else if (filter === "NightCore") {
+            filter = `-filter:a "atempo=1.06,asetrate=44100*1.25"`
+        } else if (filter === "NoiseFilter") {
+            filter = `-af "arnndn=m=./test/mp.rnnn"`
+        } else {
+            filter = ""
+        }
+        return filter
     }
 }
