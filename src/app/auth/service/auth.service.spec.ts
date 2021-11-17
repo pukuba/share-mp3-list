@@ -25,7 +25,7 @@ describe("UserService", () => {
     describe("createAuthCode", () => {
         it("should return void", async () => {
             const res = await service.createAuthCode({
-                phoneNumber: "01000000000",
+                email: "pukuba@kakao.com",
             })
             equal(res.status, "ok")
         })
@@ -34,10 +34,10 @@ describe("UserService", () => {
     describe("checkAuthCode", () => {
         it("should return jwt token", async () => {
             const verificationCode = await new RedisService().getData(
-                "01000000000",
+                "pukuba@kakao.com",
             )
             const res = await service.checkAuthCode({
-                phoneNumber: "01000000000",
+                email: "pukuba@kakao.com",
                 verificationCode: verificationCode,
             })
             verificationToken = res.verificationToken
@@ -48,24 +48,22 @@ describe("UserService", () => {
     describe("signUp", () => {
         it("should return jwt token", async () => {
             const res = await service.signUp({
-                id: "pukuba",
+                email: "pukuba@kakao.com",
                 password: "test1234!",
-                phoneNumber: "01000000000",
                 verificationToken,
                 username: "pukuba",
             })
-            equal(res.user.id, "pukuba")
+            equal(res.user.email, "pukuba@kakao.com")
         })
         it("should return error status 401", async () => {
             await db.deleteUser({
-                id: "pukuba",
+                email: "pukuba@kakao.com",
                 password: "test1234!",
             })
             try {
                 await service.signUp({
-                    id: "pukuba",
+                    email: "pukuba@kakao.com",
                     password: "test1234!",
-                    phoneNumber: "01000000000",
                     verificationToken,
                     username: "pukuba",
                 })
@@ -77,18 +75,17 @@ describe("UserService", () => {
     describe("signIn", () => {
         it("Should be return jwt token", async () => {
             await db.createUser({
-                id: "pukuba",
+                email: "pukuba@kakao.com",
                 password: "test1234!",
-                phoneNumber: "01000000000",
                 username: "pukuba",
                 verificationToken: "01010101010",
             })
             const res = await service.signIn({
-                id: "pukuba",
+                email: "pukuba@kakao.com",
                 password: "test1234!",
             })
             equal(typeof res.accessToken, "string")
-            equal(res.user.id, "pukuba")
+            equal(res.user.email, "pukuba@kakao.com")
             token = res.accessToken
         })
     })
@@ -96,7 +93,7 @@ describe("UserService", () => {
         it("Should be return status ok", async () => {
             const res = await service.deleteAccount(
                 {
-                    id: "pukuba",
+                    email: "pukuba@kakao.com",
                     password: "test1234!",
                 },
                 `Bearer ${token}`,

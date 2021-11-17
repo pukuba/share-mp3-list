@@ -16,7 +16,7 @@
         "go": "yarn build && yarn start",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "test": "NODE_PATH=./ ts-mocha --timeout 100000 -p ./tsconfig.json src/**/*spec.ts --exit",
-        "test:latest": "NODE_PATH=./ ts-mocha --timeout 100000 -p ./tsconfig.json src/app/folder/service/*spec.ts --exit",
+        "test:latest": "NODE_PATH=./ ts-mocha --timeout 100000 -p ./tsconfig.json src/app/auth/service/*spec.ts --exit",
         "test:watch": "jest --watch",
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",

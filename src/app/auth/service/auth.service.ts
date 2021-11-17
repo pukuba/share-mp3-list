@@ -94,7 +94,7 @@ export class AuthService {
             email,
             verificationCode,
         })
-        if (requestResult.statusCode === "202") {
+        if (requestResult.count === 1) {
             this.redisService.setData(email, verificationCode, 900)
             return {
                 status: "ok",
