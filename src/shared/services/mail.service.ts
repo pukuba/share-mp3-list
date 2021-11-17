@@ -5,8 +5,8 @@ import { ISendVerificationMail } from "./type/index"
 import { configService } from "./config.service"
 
 @Injectable()
-export class MessageService {
-    async sendVerificationMessage(bodyData: ISendVerificationMail) {
+export class MailService {
+    async sendVerificationMail(bodyData: ISendVerificationMail) {
         const { verificationCode, email } = bodyData
 
         const timeStamp = Date.now().toString()
