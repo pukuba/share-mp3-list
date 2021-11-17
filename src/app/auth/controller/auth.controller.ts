@@ -37,7 +37,7 @@ export class AuthController {
     @ApiOperation({
         summary: "로그인",
         description:
-            "로그인을 윈한 API 입니다. \naccess 토큰과 유저 정보를 반환합니다.",
+            "로그인을 위한 API 입니다. \naccess 토큰과 유저 정보를 반환합니다.",
     })
     async signIn(@Body() userData: LoginDto) {
         const user = await this.authService.validateUser(userData)
@@ -70,11 +70,11 @@ export class AuthController {
         description: "휴대번호 인증번호 확인을 위한 API 입니다",
     })
     async checkAuthCode(
-        @Query("phoneNumber") phoneNumber: string,
+        @Query("email") email: string,
         @Query("verificationCode") verificationCode: string,
     ) {
         return this.authService.checkAuthCode({
-            phoneNumber,
+            email,
             verificationCode,
         })
     }

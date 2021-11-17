@@ -32,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             throw new UnauthorizedException()
         }
         try {
-            const user = await this.userRepository.getUserById(id)
+            const user = await this.userRepository.getUserByEmail(id)
             return {
                 id: user.id,
                 username: user.username,

@@ -13,7 +13,7 @@ import { PassportModule } from "@nestjs/passport"
 import { UserRepository } from "src/shared/repositories/user.repository"
 import { JwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { configService } from "src/shared/services/config.service"
-import { MessageService } from "src/shared/services/message.service"
+import { MailService } from "src/shared/services/mail.service"
 import { RedisService } from "src/shared/services/redis.service"
 import { JwtStrategy } from "./strategy/jwt.strategy"
 import { JwtAuthGuard } from "src/shared/guards/role.guard"
@@ -30,7 +30,7 @@ import { DatabaseModule } from "../../shared/database/mongodb.module"
     providers: [
         AuthService,
         RedisService,
-        MessageService,
+        MailService,
         JwtManipulationService,
         JwtStrategy,
         UserRepository,

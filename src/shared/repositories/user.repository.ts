@@ -28,11 +28,7 @@ export class UserRepository {
 
     async isExist(dto: CreateUserDto) {
         const has = await this.db.collection("user").findOne({
-            $or: [
-                { id: dto.id },
-                { username: dto.username },
-                { phoneNumber: dto.phoneNumber },
-            ],
+            $or: [{ email: dto.email }, { username: dto.username }],
         })
         if (has === null) {
             return true
@@ -43,7 +39,9 @@ export class UserRepository {
     async validateUser(dto: LoginDto) {
         let user
         try {
-            user = await this.db.collection("user").findOne({ id: dto.id })
+            user = await this.db
+                .collection("user")
+                .findOne({ email: dto.email })
         } catch {
             throw new BadRequestException("계정이 존재하지 않습니다.")
         }
@@ -57,8 +55,7 @@ export class UserRepository {
         const newUser = {
             username: dto.username,
             password: crypto.hashSync(dto.password, crypto.genSaltSync(10)),
-            phoneNumber: dto.phoneNumber,
-            id: dto.id,
+            email: dto.email,
         }
         try {
             await this.db.collection("user").insertOne(newUser)
@@ -67,40 +64,33 @@ export class UserRepository {
         }
     }
 
-    async getUserByPhoneNumber(phoneNumber: string) {
+    async getUserByEmail(email: string) {
         try {
-            return await this.db.collection("user").findOne({ phoneNumber })
+            return await this.db.collection("user").findOne({ email })
         } catch (err) {
             throw new NotFoundException("계정이 존재하지 않습니다.")
         }
     }
 
-    async getUserById(id: string) {
+    async getUserByUsername(username: string) {
         try {
             return await this.db.collection("user").findOne({
-                id,
+                username,
             })
         } catch (err) {
             throw new NotFoundException("계정이 존재하지 않습니다")
         }
     }
 
-    async updateUserPassword(phoneNumber: string, password: string) {
-        let user
-        try {
-            user = await this.db.collection("user").findOne({
-                phoneNumber: phoneNumber,
-            })
-        } catch (error) {
+    async updateUserPassword(email: string, password: string) {
+        const user = await this.db.collection("user").findOne({ email })
+        if (user === null)
             throw new NotFoundException("계정이 존재하지 않습니다")
-        }
+
         const hashedPassword = crypto.hashSync(password, crypto.genSaltSync(10))
         await this.db
             .collection("user")
-            .updateOne(
-                { phoneNumber: phoneNumber },
-                { $set: { password: hashedPassword } },
-            )
+            .updateOne({ email }, { $set: { password: hashedPassword } })
         return user
     }
 
@@ -109,7 +99,7 @@ export class UserRepository {
             const user = await this.validateUser(dto)
             const { deletedCount } = await this.db
                 .collection("user")
-                .deleteOne({ id: user.id })
+                .deleteOne({ email: user.email })
 
             if (deletedCount === 0) throw new Error()
             const folderList = await this.db
@@ -120,13 +110,11 @@ export class UserRepository {
             await Promise.all([
                 this.db.collection("audio").deleteMany({ userId: user.id }),
                 this.db.collection("folder").deleteMany({ userId: user.id }),
-                this.db
-                    .collection("file")
-                    .deleteMany({
-                        folderId: {
-                            $in: folderList.map((folder) => folder._id),
-                        },
-                    }),
+                this.db.collection("file").deleteMany({
+                    folderId: {
+                        $in: folderList.map((folder) => folder._id),
+                    },
+                }),
             ])
         } catch (e) {
             throw new NotFoundException("계정이 존재하지 않습니다")

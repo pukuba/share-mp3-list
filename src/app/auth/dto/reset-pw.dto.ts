@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger"
 export class ResetPasswordDto {
     @ApiProperty({
         type: String,
-        description: "전화번호 인증 토큰",
+        description: "본인확인 인증번호",
         required: true,
     })
     @IsString()

@@ -26,7 +26,7 @@ import {
 import { randNumber } from "src/shared/lib"
 import { JwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { RedisService } from "src/shared/services/redis.service"
-import { MessageService } from "src/shared/services/message.service"
+import { MailService } from "src/shared/services/mail.service"
 import { UserRepository } from "src/shared/repositories/user.repository"
 import { StatusOk } from "src/shared/types"
 
@@ -35,23 +35,23 @@ export class AuthService {
     constructor(
         private readonly jwtService: JwtManipulationService,
         private readonly redisService: RedisService,
-        private readonly messageService: MessageService,
+        private readonly mailService: MailService,
         private readonly userRepository: UserRepository,
     ) {}
 
     async signUp(dto: CreateUserDto) {
-        const { username, phoneNumber, id, verificationToken } = dto
+        const { username, email, verificationToken } = dto
 
         const has = await this.userRepository.isExist(dto)
         if (has === false)
             throw new BadRequestException(
-                "이미 중복된 아이디, 혹은 닉네임, 휴대번호가 있습니다.",
+                "이미 중복된 이메일, 혹은 닉네임, 휴대번호가 있습니다.",
             )
 
         const jwtResult = this.jwtService.decodeJwtToken(verificationToken)
-        if (jwtResult.phoneNumber !== phoneNumber)
+        if (jwtResult.id !== email)
             throw new UnauthorizedException(
-                "휴대번호 인증이 만료되었거나 휴대번호 인증절차가 이루어지지 않았습니다.",
+                "이메일 인증이 만료되었거나 휴대번호 인증절차가 이루어지지 않았습니다.",
             )
 
         const isBlackList = await this.redisService.getData(
@@ -64,13 +64,13 @@ export class AuthService {
             this.redisService.setOnlyKey(`blacklist-${verificationToken}`, exp),
         ])
         const token = this.jwtService.generateJwtToken({
-            id: dto.id,
+            id: dto.email,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
         })
         const responseData = {
             accessToken: token,
             user: {
-                id,
+                email,
             },
         }
         return responseData
@@ -88,16 +88,14 @@ export class AuthService {
     }
 
     async createAuthCode(dto: CreateAuthCodeDto): Promise<StatusOk> {
-        const { phoneNumber } = dto
+        const { email } = dto
         const verificationCode = randNumber(100000, 999999).toString()
-        const requestResult = await this.messageService.sendVerificationMessage(
-            {
-                phoneNumber,
-                verificationCode,
-            },
-        )
+        const requestResult = await this.mailService.sendVerificationMail({
+            email,
+            verificationCode,
+        })
         if (requestResult.statusCode === "202") {
-            this.redisService.setData(phoneNumber, verificationCode, 180)
+            this.redisService.setData(email, verificationCode, 900)
             return {
                 status: "ok",
                 message: "본인확인 인증번호를 발송하였습니다",
@@ -108,15 +106,15 @@ export class AuthService {
     }
 
     async checkAuthCode(dto: CheckAuthCodeDto) {
-        const { phoneNumber, verificationCode } = dto
-        const authorizationCode = await this.redisService.getData(phoneNumber)
+        const { email, verificationCode } = dto
+        const authorizationCode = await this.redisService.getData(email)
         if (authorizationCode !== verificationCode) {
-            throw new BadRequestException("전화번호 인증에 실패하였습니다")
+            throw new BadRequestException("이메일 인증에 실패하였습니다")
         }
-        await this.redisService.deleteData(phoneNumber)
+        await this.redisService.deleteData(email)
         const responseData = {
             verificationToken: ` ${this.jwtService.generateJwtToken({
-                phoneNumber,
+                id: email,
                 exp: Math.floor(Date.now() / 1000) + 60 * 15,
             })}`,
         }
@@ -134,7 +132,7 @@ export class AuthService {
         }
         const exp = jwtData.exp - Math.floor(Date.now() / 1000)
         const [user] = await Promise.all([
-            this.userRepository.getUserByPhoneNumber(jwtData.phoneNumber),
+            this.userRepository.getUserByEmail(jwtData.id),
             this.redisService.setOnlyKey(`blacklist-${verificationToken}`, exp),
         ])
         return { status: "ok", message: `id는 ${user.id} 입니다` }
@@ -142,13 +140,13 @@ export class AuthService {
 
     async signIn(dto: LoginDto) {
         const token: string = this.jwtService.generateJwtToken({
-            id: dto.id,
+            id: dto.email,
             exp: Math.floor(Date.now() / 1000) + 60 * 15,
         })
         const responseData = {
             accessToken: token,
             user: {
-                id: dto.id,
+                email: dto.email,
             },
         }
         return responseData
@@ -166,10 +164,7 @@ export class AuthService {
         )
         if (isBlackList !== null) throw new UnauthorizedException()
         const exp = jwtResult.exp - Math.floor(Date.now() / 1000)
-        await this.userRepository.updateUserPassword(
-            jwtResult.phoneNumber,
-            password,
-        )
+        await this.userRepository.updateUserPassword(jwtResult.id, password)
         await this.redisService.setOnlyKey(
             `blacklist-${verificationToken}`,
             exp,
@@ -178,13 +173,13 @@ export class AuthService {
     }
 
     async deleteAccount(dto: DeleteUserDto, bearer: string): Promise<StatusOk> {
-        const { password, id } = dto
+        const { password, email } = dto
         const decodedToken = this.jwtService.decodeJwtToken(bearer)
-        if (id !== decodedToken.id) {
+        if (email !== decodedToken.id) {
             throw new UnauthorizedException("계정정보가 일치하지 않습니다")
         }
         await this.userRepository.deleteUser({
-            id,
+            email,
             password,
         })
         return { status: "ok", message: `계정이 삭제되었습니다` }

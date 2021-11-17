@@ -4,12 +4,15 @@ import { ApiProperty } from "@nestjs/swagger"
 export class CreateAuthCodeDto {
     @ApiProperty({
         type: String,
-        description: "유저 Phone Number",
+        description: "유저 Email",
         required: true,
     })
     @IsString()
-    @Matches(/^010\d{8,8}$/, {
-        message: "올바른 전화번호가 아닙니다 ex) 01000000000",
-    })
-    readonly phoneNumber: string
+    @Matches(
+        /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+        {
+            message: "이메일은 RFC 5322에 맞춰야합니다. eg. pukuba@kakao.com",
+        },
+    )
+    readonly email: string
 }

@@ -17,10 +17,7 @@ import { configService } from "../services/config.service"
                     await Promise.all([
                         db
                             .collection("user")
-                            .createIndex({ phoneNumber: 1 }, { unique: true }),
-                        db
-                            .collection("user")
-                            .createIndex({ id: 1 }, { unique: true }),
+                            .createIndex({ email: 1 }, { unique: true }),
                         db
                             .collection("user")
                             .createIndex({ username: 1 }, { unique: true }),
