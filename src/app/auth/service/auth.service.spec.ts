@@ -6,7 +6,7 @@ import { deepStrictEqual as equal } from "assert"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { AuthController } from "../controller/auth.controller"
 
-import { JwtManipulationService } from "src/shared/services/jwt.manipulation.service"
+import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { MessageService } from "src/shared/services/message.service"
 import { RedisService } from "src/shared/Services/redis.service"
 import { AuthModule } from "../auth.module"
@@ -42,6 +42,10 @@ describe("UserService", () => {
             })
             verificationToken = res.verificationToken
             equal("verificationToken" in res, true)
+            equal(
+                jwtManipulationService.decodeJwtToken(verificationToken, "id"),
+                "pukuba@kakao.com",
+            )
         })
     })
 

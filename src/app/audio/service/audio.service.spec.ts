@@ -33,12 +33,11 @@ describe("Audio Service", () => {
         await userDb.createUser({
             username: "test",
             password: "testtest1@@",
-            id: "test",
-            phoneNumber: "01000000000",
+            email: "pukuba@kakao.com",
             verificationToken: "01010101010",
         })
         token = jwtManipulationService.generateJwtToken({
-            id: "test",
+            id: "pukuba@kakao.com",
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
         })
     })
@@ -98,6 +97,9 @@ describe("Audio Service", () => {
     })
 
     after(async () => {
-        await userDb.deleteUser({ id: "test", password: "testtest1@@" })
+        await userDb.deleteUser({
+            email: "pukuba@kakao.com",
+            password: "testtest1@@",
+        })
     })
 })

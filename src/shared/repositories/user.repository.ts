@@ -60,7 +60,9 @@ export class UserRepository {
         try {
             await this.db.collection("user").insertOne(newUser)
         } catch (error) {
-            throw new UnprocessableEntityException(error.errmsg)
+            throw new UnprocessableEntityException(
+                "아이디 혹은 이메일이 다른유저와 중복됩니다",
+            )
         }
     }
 
