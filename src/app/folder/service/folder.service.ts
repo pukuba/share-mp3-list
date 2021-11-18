@@ -162,4 +162,15 @@ export class FolderService {
             data: res.data,
         }
     }
+
+    async getLikeFolders(userId: string, page: number) {
+        const res = await this.folderRepository.getLikeFolders(userId, page)
+        return {
+            pageInfo: {
+                count: res.count,
+                page: page,
+            },
+            data: res.data,
+        }
+    }
 }

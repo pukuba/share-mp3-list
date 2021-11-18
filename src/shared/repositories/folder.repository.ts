@@ -266,4 +266,30 @@ export class FolderRepository {
             }),
         }
     }
+
+    async getLikeFolders(userId: string, page: number) {
+        const [lists, count] = await Promise.all([
+            this.db
+                .collection("like")
+                .find({ userId })
+                .skip((Math.max(page - 1), 0) * 10)
+                .limit(10)
+                .toArray(),
+            this.db.collection("like").find({ userId }).count(),
+        ])
+        const folderLists = lists.map((x) => x.folderId)
+        const folderList = await this.db
+            .collection("folder")
+            .find({
+                _id: { $in: folderLists },
+            })
+            .sort({ _id: -1 })
+            .toArray()
+        return {
+            count,
+            data: folderList.map((x: FolderEntity & { _id: ObjectId }) => {
+                return { ...x, likeStatus: true }
+            }),
+        }
+    }
 }

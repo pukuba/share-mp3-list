@@ -44,7 +44,7 @@ describe("Audio Service", () => {
 
         audioId = (
             await audioDb.uploadAudio(
-                "test",
+                "pukuba@kakao.com",
                 { name: "raw" },
                 "https://youtu.be/sU02JH6uZMc",
             )
@@ -52,13 +52,19 @@ describe("Audio Service", () => {
     })
     describe("Create Folder", () => {
         it("should be return status: 'ok'", async () => {
-            const res = await service.createFolder("test", "test-FolderName")
+            const res = await service.createFolder(
+                "pukuba@kakao.com",
+                "test-FolderName",
+            )
             equal(res.status, "ok")
         })
 
         it("should be return BadRequestException error", async () => {
             try {
-                await service.createFolder("test", "test-FolderName")
+                await service.createFolder(
+                    "pukuba@kakao.com",
+                    "test-FolderName",
+                )
             } catch (e) {
                 equal(e.message, "Folder name is existed")
             }
@@ -77,7 +83,7 @@ describe("Audio Service", () => {
     describe("Add Audio to Folder", () => {
         it("should be return status: ok", async () => {
             const res = await service.addAudioToFolder(
-                "test",
+                "pukuba@kakao.com",
                 folderId.toString(),
                 audioId.toString(),
             )
@@ -87,23 +93,35 @@ describe("Audio Service", () => {
 
     describe("Like Folder", () => {
         it("should be return status: ok - 1", async () => {
-            const res = await service.like("test", folderId.toString())
+            const res = await service.like(
+                "pukuba@kakao.com",
+                folderId.toString(),
+            )
             equal(res.status, "ok")
         })
         it("should be return status: ok - 2", async () => {
-            const res = await service.like("test1", folderId.toString())
+            const res = await service.like(
+                "pukuba@kakao.com1",
+                folderId.toString(),
+            )
             equal(res.status, "ok")
         })
         it("should be return status: ok - 3", async () => {
-            const res = await service.like("test1", folderId.toString())
+            const res = await service.like(
+                "pukuba@kakao.com1",
+                folderId.toString(),
+            )
             equal(res.status, "ok")
         })
     })
 
     describe("Get Folder", () => {
         it("should be return folder info", async () => {
-            const res = await service.getFolder(folderId.toString(), "test")
-            equal(res.creator, "test")
+            const res = await service.getFolder(
+                folderId.toString(),
+                "pukuba@kakao.com",
+            )
+            equal(res.creator, "pukuba@kakao.com")
             equal(res.folderId.toString(), folderId.toString())
             equal(res.folderName, "test-FolderName")
             equal(res.likes, 1)
@@ -113,10 +131,21 @@ describe("Audio Service", () => {
         })
     })
 
+    describe("Get like folder list", () => {
+        it("should be return folder list", async () => {
+            const res = await service.getLikeFolders("pukuba@kakao.com", 1)
+            equal(res.data[0].likeStatus, true)
+            equal(res.data[0].creator, "pukuba@kakao.com")
+            equal(res.data[0].folderName, "test-FolderName")
+            equal(res.data[0].likes, 1)
+            equal(res.pageInfo.count, 1)
+        })
+    })
+
     describe("Del Audio to Folder", () => {
         it("should be return status: ok", async () => {
             const res = await service.delAudioToFolder(
-                "test",
+                "pukuba@kakao.com",
                 folderId.toString(),
                 audioId.toString(),
             )
@@ -126,7 +155,10 @@ describe("Audio Service", () => {
 
     describe("Del Folder", () => {
         it("should be return status: ok", async () => {
-            const res = await service.delFolder("test", folderId.toString())
+            const res = await service.delFolder(
+                "pukuba@kakao.com",
+                folderId.toString(),
+            )
             equal(res.status, "ok")
         })
     })

@@ -42,7 +42,7 @@ export class FolderController {
         @Headers("authorization") bearer: string,
         @Body() data: CreateFolderDto,
     ) {
-        return this.folderService.createFolder(
+        return await this.folderService.createFolder(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             data.folderName,
         )
@@ -57,7 +57,7 @@ export class FolderController {
         @Param("folderId") folderId: string,
         @Body() data: UpdateFolderDto,
     ) {
-        return this.folderService.updateFolder(
+        return await this.folderService.updateFolder(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             folderId,
             data,
@@ -73,7 +73,7 @@ export class FolderController {
         @Param("folderId") folderId: string,
         @Param("audioId") audioId: string,
     ) {
-        return this.folderService.addAudioToFolder(
+        return await this.folderService.addAudioToFolder(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             folderId,
             audioId,
@@ -89,7 +89,7 @@ export class FolderController {
         @Param("folderId") folderId: string,
         @Param("audioId") audioId: string,
     ) {
-        return this.folderService.delAudioToFolder(
+        return await this.folderService.delAudioToFolder(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             folderId,
             audioId,
@@ -104,7 +104,7 @@ export class FolderController {
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
     ) {
-        return this.folderService.delFolder(
+        return await this.folderService.delFolder(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             folderId,
         )
@@ -122,7 +122,7 @@ export class FolderController {
         } catch {
             id = undefined
         }
-        return this.folderService.getFolder(folderId, id)
+        return await this.folderService.getFolder(folderId, id)
     }
 
     @Get("/search")
@@ -138,7 +138,7 @@ export class FolderController {
         } catch {
             id = undefined
         }
-        return this.folderService.searchFolder(
+        return await this.folderService.searchFolder(
             keyword,
             creator || "",
             page || 1,
@@ -146,9 +146,31 @@ export class FolderController {
         )
     }
 
-    @Post("/like")
+    @Post("/like/:folderId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
     @ApiOperation({ summary: "폴더에 좋아요 표시 or 좋아요 취소" })
-    async likeFolder() {}
+    async likeFolder(
+        @Headers("authorization") bearer: string,
+        @Param("folderId") folderId: string,
+    ) {
+        return await this.folderService.like(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            folderId,
+        )
+    }
+
+    @Get("/like/:page")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "좋아요 리스트 가져오기" })
+    async getLikeList(
+        @Headers("authorization") bearer: string,
+        @Param("page") page: number,
+    ) {
+        return await this.folderService.getLikeFolders(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            page || 1,
+        )
+    }
 }
