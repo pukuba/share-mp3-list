@@ -1,16 +1,13 @@
 import { Test, TestingModule } from "@nestjs/testing"
 import { AuthService } from "./auth.service"
 
-import { Connection, Repository } from "typeorm"
 import { deepStrictEqual as equal } from "assert"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { AuthController } from "../controller/auth.controller"
 
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
-import { MessageService } from "src/shared/services/message.service"
 import { RedisService } from "src/shared/Services/redis.service"
 import { AuthModule } from "../auth.module"
 import { UserRepository } from "src/shared/repositories/user.repository"
+
 describe("UserService", () => {
     let service: AuthService
     let db: UserRepository
@@ -106,6 +103,4 @@ describe("UserService", () => {
             equal(res.message, "계정이 삭제되었습니다")
         })
     })
-
-    after(async () => {})
 })

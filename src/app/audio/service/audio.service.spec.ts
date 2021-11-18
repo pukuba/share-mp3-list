@@ -1,22 +1,18 @@
 // Nest dependencies
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { Test, TestingModule } from "@nestjs/testing"
+import { Test } from "@nestjs/testing"
 
 // Other dependencies
 
-import { Connection, Repository } from "typeorm"
 import { deepStrictEqual as equal } from "assert"
 import * as fs from "fs"
 // Local files
 import { AudioService } from "./audio.service"
-import { AudioController } from "../controller/audio.controller"
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
-import { MessageService } from "src/shared/services/message.service"
-import { RedisService } from "src/shared/Services/redis.service"
 import { AudioModule } from "../audio.module"
 import { UserRepository } from "src/shared/repositories/user.repository"
 import { AudioRepository } from "src/shared/repositories/audio.repository"
-import { ObjectId } from "bson"
+import { ObjectId } from "mongodb"
+
 describe("Audio Service", () => {
     let service: AudioService
     let userDb: UserRepository

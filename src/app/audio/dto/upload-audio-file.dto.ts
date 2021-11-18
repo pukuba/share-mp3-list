@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { File } from "src/shared/services/type"
+import { IFile } from "../audio.interface"
 import { IsNotEmpty, Length, Matches } from "class-validator"
 
 enum Filter {
@@ -36,5 +36,5 @@ export class UploadAudioByFileDto {
         type: "string",
         format: "binary",
     })
-    file: File
+    file: IFile
 }

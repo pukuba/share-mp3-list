@@ -1,4 +1,4 @@
 export * from "./jwt"
 export * from "./message"
-export * from "./media"
+export * from "./audio"
 export * from "./mail"

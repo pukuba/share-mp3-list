@@ -1,28 +1,16 @@
 // Nest dependencies
-import {
-    Injectable,
-    HttpStatus,
-    BadRequestException,
-    UnauthorizedException,
-    Inject,
-} from "@nestjs/common"
+import { Injectable, BadRequestException } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 
 // Other dependencies
-import { JwtPayload } from "jsonwebtoken"
 import { validate } from "class-validator"
-import { getRepository, Repository } from "typeorm"
 
 // Local files
-import {
-    UpdateAudioDto,
-    UploadAudioByFileDto,
-    UploadAudioByLinkDto,
-} from "../dto"
+import { UploadAudioByFileDto, UploadAudioByLinkDto } from "../dto"
 import { FFmpegService } from "src/shared/services/ffmpeg.service"
 import { AwsService } from "src/shared/services/aws.service"
+import { IFile } from "src/shared/types"
 import { AudioRepository } from "src/shared/repositories/audio.repository"
-import { File } from "src/shared/services/type"
 import { RedisService } from "src/shared/services/redis.service"
 
 @Injectable()
@@ -36,7 +24,7 @@ export class AudioService {
 
     async uploadAudioByFile(
         userId: string,
-        file: File,
+        file: IFile,
         payload: UploadAudioByFileDto,
     ) {
         payload.name = payload.name.replace(/^\s+|\s+$/g, "")

@@ -1,7 +1,5 @@
 import { ApiProperty, ApiQuery } from "@nestjs/swagger"
 
-import { IsNotEmpty, Length } from "class-validator"
-
 export class SearchAudioDto {
     @ApiProperty({
         description: "신호등",

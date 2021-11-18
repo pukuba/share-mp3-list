@@ -1,4 +1,4 @@
-export interface File {
+export interface IFile {
     buffer: Buffer
     fieldname: string
     originalname: string

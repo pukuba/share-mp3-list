@@ -67,7 +67,7 @@ export class AudioRepository {
         }
     }
 
-    async searchAudio(page: number, keyword: string = "") {
+    async searchAudio(page: number, keyword = "") {
         const skip = Math.max(page - 1, 0) * 20
         const take = 20
         const [result, count] = await Promise.all([
