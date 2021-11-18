@@ -6,6 +6,8 @@ const exec = util.promisify(syncExec)
 import * as fs from "fs"
 const deleteFile = util.promisify(unlink)
 
+import * as gad from "get-audio-duration"
+
 export class FFmpegService {
     async filterByYoutube(url: string, filename: string, filter: string) {
         const info = await ytdl.getInfo(url)
@@ -78,5 +80,18 @@ export class FFmpegService {
             filter = ""
         }
         return filter
+    }
+
+    async getAudioDuration(uri: string) {
+        let duration
+        try {
+            duration = await gad.getAudioDurationInSeconds(uri)
+        } catch (e) {
+            throw new Error("음원 파일을 정상적으로 읽지 못했습니다")
+        }
+        if (duration > 60 * 5) {
+            throw new Error("음원이 너무 길어요")
+        }
+        return duration
     }
 }

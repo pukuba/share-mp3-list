@@ -52,6 +52,9 @@ export class AudioService {
                         name,
                         dto.filter,
                     )
+                    const duration = await this.ffmpegService.getAudioDuration(
+                        `test/${name}-1.mp3`,
+                    )
                     const url = await this.awsService.uploadFile(
                         `${name}.mp3`,
                         "audio",
@@ -60,12 +63,18 @@ export class AudioService {
                     const [_, __, newAudio] = await Promise.all([
                         this.ffmpegService.removeFile(`${name}`),
                         this.ffmpegService.removeFile(`${name}-1`),
-                        this.audioRepository.uploadAudio(userId, payload, url),
+                        this.audioRepository.uploadAudio(
+                            userId,
+                            { ...payload, duration },
+                            url,
+                        ),
                     ])
                     return newAudio
                 } catch (e) {
                     console.log(e)
-                    throw new BadRequestException("Error uploading file")
+                    throw new BadRequestException(
+                        "올바르지 않은 음원이거나, 길이가 너무 깁니다 max(300sec)",
+                    )
                 }
             },
         )
@@ -86,6 +95,9 @@ export class AudioService {
                         name,
                         dto.filter,
                     )
+                    const duration = await this.ffmpegService.getAudioDuration(
+                        `test/${name}-1.mp3`,
+                    )
                     const url = await this.awsService.uploadFile(
                         `${name}.mp3`,
                         "audio",
@@ -96,7 +108,7 @@ export class AudioService {
                         this.ffmpegService.removeFile(`test/${name}-1.mp3`),
                         this.audioRepository.uploadAudio(
                             userId,
-                            { name: title, filter: dto.filter },
+                            { name: title, filter: dto.filter, duration },
                             url,
                         ),
                     ])
@@ -110,10 +122,10 @@ export class AudioService {
 
     async getAudio(audioId: string, ip: string) {
         const audio = await this.audioRepository.getAudioByAudioId(audioId)
-        const view = await this.redisService.getData(`${audioId}${ip}`)
+        const view = await this.redisService.getData(`views:${audioId}${ip}`)
         if (view === null) {
             await Promise.all([
-                this.redisService.setOnlyKey(`${audioId}${ip}`, 3600),
+                this.redisService.setOnlyKey(`views:${audioId}${ip}`, 1800),
                 this.audioRepository.updateAudioViewCount(audioId, 1),
             ])
             audio.views++

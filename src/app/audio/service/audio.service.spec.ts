@@ -64,9 +64,12 @@ describe("Audio Service", () => {
 
     describe("getAudio", () => {
         it("should be return AudioInfo", async () => {
-            const media = await service.getAudio(audioId.toString(), "::1")
-            equal(media.userId, "test")
-            equal(media._id.toString(), audioId.toString())
+            const audio = await service.getAudio(audioId.toString(), "::1")
+            equal(audio.userId, "test")
+            equal(audio.audioId.toString(), audioId.toString())
+            equal(audio.views, 1)
+            equal(audio.filter, "Default")
+            equal(typeof audio.duration, "number")
         })
         it("should be return BadRequestException Error", async () => {
             try {
@@ -82,6 +85,7 @@ describe("Audio Service", () => {
             const pageInfo = await service.searchAudio(1, "t")
             equal(pageInfo.count, 1)
             equal(pageInfo.data[0].title.includes("t"), true)
+            equal(pageInfo.data[0].audioId.toString(), audioId.toString())
         })
     })
 

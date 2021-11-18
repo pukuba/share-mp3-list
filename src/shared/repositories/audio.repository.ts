@@ -9,7 +9,7 @@ import {
 } from "@nestjs/common"
 
 // Other dependencies
-import { Db, ObjectId, ObjectID } from "mongodb"
+import { Db, ObjectId } from "mongodb"
 import { Repository, EntityRepository, Like } from "typeorm"
 
 // Local files
@@ -19,6 +19,7 @@ import {
     UploadAudioByLinkDto,
 } from "src/app/audio/dto"
 import { configService } from "../services/config.service"
+import { AudioEntity, FolderEntity } from "../types"
 
 @Injectable()
 export class AudioRepository {
@@ -26,12 +27,14 @@ export class AudioRepository {
         @Inject("DATABASE_CONNECTION")
         private db: Db,
     ) {}
-    async uploadAudio(userId: string, dto, url: string) {
+    async uploadAudio(userId: string, dto, url: string): Promise<AudioEntity> {
         const audio = {
             userId: userId,
             url,
             title: dto.name,
+            filter: dto.filter,
             views: 0,
+            duration: dto.duration,
         }
 
         try {
@@ -45,29 +48,32 @@ export class AudioRepository {
         }
     }
 
-    async getAudioByAudioId(audioId: string) {
+    async getAudioByAudioId(audioId: string): Promise<AudioEntity> {
         const audio = await this.db
             .collection("audio")
             .findOne({ _id: new ObjectId(audioId) })
         if (audio === null) {
             throw new BadRequestException("해당 음원이 존재하지가 않습니다")
         }
-
-        return audio
+        return this.formatAudioEntity(audio)
     }
 
-    async updateAudioViewCount(mediaId: string, count: number) {
-        let audio
-        try {
-            // media = await this.findOneOrFail({ mediaId: mediaId })
-            // media.views += count
-            // await this.save(media)
-        } catch {
-            throw new NotFoundException("해당 게시글이 존재하지가 않습니다")
+    async updateAudioViewCount(audioId: string, count: number) {
+        const audio = await this.db
+            .collection("audio")
+            .updateOne(
+                { _id: new ObjectId(audioId) },
+                { $inc: { views: count } },
+            )
+        if (audio.modifiedCount === 0) {
+            throw new BadRequestException("해당 음원이 존재하지가 않습니다")
         }
     }
 
-    async searchAudio(page: number, keyword = "") {
+    async searchAudio(
+        page: number,
+        keyword = "",
+    ): Promise<{ count: number; data: AudioEntity[] }> {
         const skip = Math.max(page - 1, 0) * 20
         const take = 20
         const [result, count] = await Promise.all([
@@ -83,7 +89,7 @@ export class AudioRepository {
                 .count(),
         ])
         return {
-            data: result,
+            data: result.map(this.formatAudioEntity),
             count,
         }
     }
@@ -98,6 +104,18 @@ export class AudioRepository {
         await this.db
             .collection("file")
             .deleteMany({ audioId: new ObjectId(audioId) })
+    }
+
+    private formatAudioEntity(data): AudioEntity {
+        return {
+            audioId: data._id,
+            title: data.title,
+            views: data.views,
+            duration: data.duration,
+            filter: data.filter,
+            url: data.url,
+            userId: data.userId,
+        }
     }
 
     // async patchMedia(userId: string, mediaId: string, dto: UpdateMediaDto) {
