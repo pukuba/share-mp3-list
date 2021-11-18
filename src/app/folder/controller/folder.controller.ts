@@ -164,7 +164,7 @@ export class FolderController {
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
     @ApiOperation({ summary: "좋아요 리스트 가져오기" })
-    async getLikeList(
+    async getLikeFolders(
         @Headers("authorization") bearer: string,
         @Param("page") page: number,
     ) {
