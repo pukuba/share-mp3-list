@@ -69,6 +69,7 @@ describe("Audio Service", () => {
         it("should be return folder list & page info", async () => {
             const res = await service.searchFolder("test", "", 1)
             equal(res.pageInfo.count, 1)
+            equal(res.data[0].likeStatus, false)
             folderId = res.data[0]._id
         })
     })
@@ -84,13 +85,29 @@ describe("Audio Service", () => {
         })
     })
 
+    describe("Like Folder", () => {
+        it("should be return status: ok - 1", async () => {
+            const res = await service.like("test", folderId.toString())
+            equal(res.status, "ok")
+        })
+        it("should be return status: ok - 2", async () => {
+            const res = await service.like("test1", folderId.toString())
+            equal(res.status, "ok")
+        })
+        it("should be return status: ok - 3", async () => {
+            const res = await service.like("test1", folderId.toString())
+            equal(res.status, "ok")
+        })
+    })
+
     describe("Get Folder", () => {
         it("should be return folder info", async () => {
-            const res = await service.getFolder(folderId.toString())
+            const res = await service.getFolder(folderId.toString(), "test")
             equal(res.creator, "test")
             equal(res.folderId.toString(), folderId.toString())
             equal(res.folderName, "test-FolderName")
-            equal(res.likeCount, 0)
+            equal(res.likes, 1)
+            equal(res.likeStatus, true)
             equal(res.audioList.length, 1)
             equal(res.audioList[0].audioId.toString(), audioId.toString())
         })

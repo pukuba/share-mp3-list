@@ -33,6 +33,12 @@ import { configService } from "../services/config.service"
                                 { folderId: 1, audioId: 1 },
                                 { unique: true },
                             ),
+                        db
+                            .collection("like")
+                            .createIndex(
+                                { folderId: 1, userId: 1 },
+                                { unique: true },
+                            ),
                     ])
 
                     return db

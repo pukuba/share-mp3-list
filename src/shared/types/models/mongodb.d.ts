@@ -23,20 +23,22 @@ export interface AudioEntity {
 /**
  * @description 폴더의 도큐먼트 인터페이스
  * @prop {ObjectId} folderId Document의 고유 아이디
- * @prop {string} userId 유저 아이디
+ * @prop {string} creator 폴더 생성자 아이디
  * @prop {string} folderName 폴더 이름
- * @prop {number} like 좋아요 수
+ * @prop {number} likes 좋아요 수
  * @prop {Date} updatedAt 최근 업데이트 날짜
  * @prop {Date} createdAt 생성 날짜
+ * @prop {boolean | undefined} likeStatus 좋아요 상태
  *
  */
 export interface FolderEntity {
     folderId: ObjectId
-    userId: string
+    creator: string
     folderName: string
-    like: number
+    likes: number
     updatedAt: Date
     createdAt: Date
+    likeStatus?: boolean
 }
 
 /**

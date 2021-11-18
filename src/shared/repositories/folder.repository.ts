@@ -8,9 +8,9 @@ import {
     Module,
 } from "@nestjs/common"
 
-import { Repository, EntityRepository } from "typeorm"
 import * as crypto from "bcryptjs"
 import { Db, ObjectId } from "mongodb"
+import { FolderEntity, AudioEntity } from "../types"
 
 export class FolderRepository {
     constructor(
@@ -18,22 +18,70 @@ export class FolderRepository {
         private db: Db,
     ) {}
 
-    async createFolder(userId: string, folderName: string) {
-        const { insertedId } = await this.db.collection("folder").insertOne({
+    async like(folderId: string, userId: string) {
+        const folder = await this.db.collection("like").findOne({
+            folderId: new ObjectId(folderId),
             userId,
-            folderName,
-            like: 0,
-            createdAt: new Date(),
-            updatedAt: new Date(),
         })
-        return {
-            userId,
-            folderName,
-            folderId: insertedId,
+        if (folder) {
+            await Promise.all([
+                this.db
+                    .collection("like")
+                    .deleteOne({ folderId: new ObjectId(folderId), userId }),
+                this.db
+                    .collection("folder")
+                    .updateOne(
+                        { _id: new ObjectId(folderId) },
+                        { $inc: { likes: -1 } },
+                    ),
+            ])
+        } else {
+            await Promise.all([
+                this.db
+                    .collection("like")
+                    .insertOne({ folderId: new ObjectId(folderId), userId }),
+                this.db
+                    .collection("folder")
+                    .updateOne(
+                        { _id: new ObjectId(folderId) },
+                        { $inc: { likes: 1 } },
+                    ),
+            ])
         }
     }
 
-    async getFolderInfo(folderId: string) {
+    async getFolderByFolderId(
+        folderId: string,
+    ): Promise<FolderEntity & { _id: ObjectId }> {
+        const folder = (await this.db.collection("folder").findOne({
+            _id: new ObjectId(folderId),
+        })) as FolderEntity & { _id: ObjectId }
+        return folder
+    }
+    async createFolder(
+        creator: string,
+        folderName: string,
+    ): Promise<FolderEntity> {
+        const now = new Date()
+        const { insertedId } = await this.db.collection("folder").insertOne({
+            creator,
+            folderName,
+            likes: 0,
+            createdAt: now,
+            updatedAt: now,
+        })
+        return {
+            creator,
+            folderName,
+            folderId: insertedId,
+            likes: 0,
+            createdAt: now,
+            updatedAt: now,
+            likeStatus: false,
+        }
+    }
+
+    async getFolderInfo(folderId: string, userId?: string) {
         const folder = await this.db.collection("folder").findOne({
             _id: new ObjectId(folderId),
         })
@@ -47,17 +95,21 @@ export class FolderRepository {
             })
             .toArray()
 
-        const audios = await this.db
+        const audios = (await this.db
             .collection("audio")
-            .find({
-                _id: {
-                    $in: songList.map((song) => new ObjectId(song.audioId)),
-                },
-            })
-            .toArray()
+            .find({ _id: { $in: songList.map((song) => song.audioId) } })
+            .toArray()) as (AudioEntity & { _id: ObjectId })[]
 
+        let likeStatus = false
+        if (userId) {
+            const like = await this.db.collection("like").findOne({
+                folderId: new ObjectId(folderId),
+                userId: userId,
+            })
+            likeStatus = like !== null
+        }
         return {
-            creator: folder.userId,
+            creator: folder.creator,
             folderName: folder.folderName,
             folderId: folder._id,
             audioList: audios.map((audio) => {
@@ -66,18 +118,16 @@ export class FolderRepository {
                     audioName: audio.title,
                     audioUrl: audio.url,
                     audioViews: audio.views,
-                    uploader: audio.userId,
+                    userId: audio.userId,
+                    audioFilter: audio.filter,
+                    audioDuration: audio.duration,
                 }
             }),
-            likeCount: folder.like,
+            likes: folder.likes,
+            likeStatus,
+            updatedAt: folder.updatedAt,
+            createdAt: folder.createdAt,
         }
-    }
-
-    async getFolderByFolderId(folderId: string) {
-        const folder = await this.db.collection("folder").findOne({
-            _id: new ObjectId(folderId),
-        })
-        return folder
     }
 
     async getFolderByFolderName(folderName: string) {
@@ -127,19 +177,22 @@ export class FolderRepository {
             )
     }
 
-    async delFolder(folderId: string) {
+    async delFolder(folderId: string, creator: string) {
         const { deletedCount } = await this.db.collection("folder").deleteOne({
             _id: new ObjectId(folderId),
+            creator,
         })
         if (deletedCount === 0) {
-            throw new Error("해당 폴더가 존재하지 않습니다")
+            throw new Error(
+                "해당 폴더가 존재하지 않거나 본인의 폴더가 아닙니다",
+            )
         }
         await this.db.collection("file").deleteMany({
             folderId: new ObjectId(folderId),
         })
     }
 
-    async updateFolder(folderId: string, folderName: string) {
+    async updateFolder(folderId: string | ObjectId, folderName: string) {
         const { modifiedCount } = await this.db.collection("folder").updateOne(
             { _id: new ObjectId(folderId) },
             {
@@ -154,7 +207,12 @@ export class FolderRepository {
         }
     }
 
-    async searchFolder(keyword: string, userId: string, page: number) {
+    async searchFolder(
+        keyword: string,
+        creator: string,
+        page: number,
+        userId?: string,
+    ) {
         let query = {}
         if (keyword) {
             query = {
@@ -163,10 +221,10 @@ export class FolderRepository {
                 },
             }
         }
-        if (userId) {
+        if (creator) {
             query = {
                 ...query,
-                userId,
+                creator,
             }
         }
         const [folderList, cnt] = await Promise.all([
@@ -175,9 +233,37 @@ export class FolderRepository {
                 .find(query)
                 .skip((Math.max(page - 1), 0) * 10)
                 .limit(10)
-                .toArray(),
+                .toArray() as Promise<(FolderEntity & { _id: ObjectId })[]>,
             this.db.collection("folder").find(query).count(),
         ])
-        return { count: cnt, data: folderList }
+        let likeList = null,
+            idxMap = null
+        if (userId) {
+            likeList = await this.db
+                .collection("like")
+                .find({
+                    folderId: { $in: folderList.map((x) => x._id) },
+                    userId,
+                })
+                .toArray()
+            idxMap = folderList.reduce((acc, cur, idx) => {
+                acc[cur._id.toString()] = idx
+                return acc
+            }, {})
+            for (const item of likeList) {
+                const idx = idxMap[item.folderId.toString()]
+                folderList[idx].likeStatus = true
+            }
+        }
+
+        return {
+            count: cnt,
+            data: folderList.map((x) => {
+                if (x?.likeStatus === undefined) {
+                    x.likeStatus = false
+                }
+                return x
+            }),
+        }
     }
 }

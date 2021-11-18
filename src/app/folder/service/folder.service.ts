@@ -27,6 +27,20 @@ export class FolderService {
         private readonly folderRepository: FolderRepository,
     ) {}
 
+    async like(userId: string, folderId: string) {
+        const getFolder = await this.folderRepository.getFolderByFolderId(
+            folderId,
+        )
+        if (!getFolder) {
+            throw new BadRequestException("폴더가 존재하지 않습니다")
+        }
+        await this.folderRepository.like(folderId, userId)
+        return {
+            status: "ok",
+            message: "정상적으로 좋아요를 눌렀습니다 / 취소했습니다",
+        }
+    }
+
     async createFolder(userId: string, folderName: string): Promise<StatusOk> {
         const isHas = await this.folderRepository.getFolderByFolderName(
             folderName,
@@ -50,10 +64,15 @@ export class FolderService {
         const getFolder = await this.folderRepository.getFolderByFolderId(
             folderId,
         )
-        if (getFolder) {
-            throw new BadRequestException("Folder id is existed")
+        if (!getFolder || getFolder?.creator !== userId) {
+            throw new BadRequestException(
+                "폴더가 존재하지 않거나 본인의 폴더가 아닙니다",
+            )
         }
-        await this.folderRepository.updateFolder(userId, dto.folderName)
+        await this.folderRepository.updateFolder(
+            getFolder._id.toString(),
+            dto.folderName,
+        )
         return {
             status: "ok",
             message: "정상적으로 폴더를 수정하였습니다",
@@ -68,7 +87,7 @@ export class FolderService {
         const getFolder = await this.folderRepository.getFolderByFolderId(
             folderId,
         )
-        if (!getFolder || getFolder?.userId !== userId) {
+        if (!getFolder || getFolder?.creator !== userId) {
             throw new BadRequestException(
                 "폴더가 존재하지 않거나 본인의 폴더가 아닙니다",
             )
@@ -89,7 +108,7 @@ export class FolderService {
             folderId,
         )
 
-        if (!getFolder || getFolder?.userId !== userId) {
+        if (!getFolder || getFolder?.creator !== userId) {
             throw new BadRequestException(
                 "폴더가 존재하지 않거나 본인의 폴더가 아닙니다",
             )
@@ -104,17 +123,7 @@ export class FolderService {
     }
 
     async delFolder(userId: string, folderId: string): Promise<StatusOk> {
-        const getFolder = await this.folderRepository.getFolderByFolderId(
-            folderId,
-        )
-
-        if (!getFolder || getFolder?.userId !== userId) {
-            throw new BadRequestException(
-                "폴더가 존재하지 않거나 본인의 폴더가 아닙니다",
-            )
-        }
-
-        await this.folderRepository.delFolder(folderId)
+        await this.folderRepository.delFolder(folderId, userId)
 
         return {
             status: "ok",
@@ -122,21 +131,28 @@ export class FolderService {
         }
     }
 
-    async getFolder(folderId: string) {
-        const getFolder = await this.folderRepository.getFolderByFolderId(
+    async getFolder(folderId: string, userId?: string) {
+        const getFolder = await this.folderRepository.getFolderInfo(
             folderId,
+            userId,
         )
         if (!getFolder) {
             throw new BadRequestException("폴더가 존재하지 않습니다")
         }
-        return await this.folderRepository.getFolderInfo(folderId)
+        return await this.folderRepository.getFolderInfo(folderId, userId)
     }
 
-    async searchFolder(keyword: string, creator: string, page: number) {
+    async searchFolder(
+        keyword: string,
+        creator: string,
+        page: number,
+        userId?: string,
+    ) {
         const res = await this.folderRepository.searchFolder(
             keyword,
             creator,
             page,
+            userId,
         )
         return {
             pageInfo: {

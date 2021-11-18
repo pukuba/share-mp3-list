@@ -116,17 +116,39 @@ export class FolderController {
         @Headers("authorization") bearer: string,
         @Param("folderId") folderId: string,
     ) {
-        return this.folderService.getFolder(folderId)
+        let id
+        try {
+            id = jwtManipulationService.decodeJwtToken(bearer, "id")
+        } catch {
+            id = undefined
+        }
+        return this.folderService.getFolder(folderId, id)
     }
 
     @Get("/search")
     @ApiQuery({ type: SearchFolderDto })
     @ApiOperation({ summary: "폴더를 검색하기" })
-    async searchFolder(@Query() { keyword, creator, page }) {
+    async searchFolder(
+        @Query() { keyword, creator, page },
+        @Headers("authorization") bearer: string,
+    ) {
+        let id
+        try {
+            id = jwtManipulationService.decodeJwtToken(bearer, "id")
+        } catch {
+            id = undefined
+        }
         return this.folderService.searchFolder(
             keyword,
             creator || "",
             page || 1,
+            id,
         )
     }
+
+    @Post("/like")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "폴더에 좋아요 표시 or 좋아요 취소" })
+    async likeFolder() {}
 }
