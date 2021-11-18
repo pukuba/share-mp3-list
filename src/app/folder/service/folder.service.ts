@@ -9,12 +9,14 @@ import {
 import { InjectRepository } from "@nestjs/typeorm"
 
 // Other dependencies
+import { ObjectId } from "mongodb"
 import { getRepository, Repository } from "typeorm"
 import { validate } from "class-validator"
 import { JwtPayload } from "jsonwebtoken"
 
 // Local files
 import { UpdateFolderDto } from "../dto"
+import { TSort } from "src/shared/types"
 import { JwtManipulationService } from "src/shared/services/jwt.manipulation.service"
 import { UserRepository } from "src/shared/repositories/user.repository"
 import { FolderRepository } from "src/shared/repositories/folder.repository"
@@ -41,17 +43,21 @@ export class FolderService {
         }
     }
 
-    async createFolder(userId: string, folderName: string): Promise<StatusOk> {
+    async createFolder(
+        userId: string,
+        folderName: string,
+    ): Promise<StatusOk & { folderId: ObjectId }> {
         const isHas = await this.folderRepository.getFolderByFolderName(
             folderName,
         )
         if (isHas) {
             throw new BadRequestException("Folder name is existed")
         }
-        await this.folderRepository.createFolder(userId, folderName)
+        const res = await this.folderRepository.createFolder(userId, folderName)
         return {
             status: "ok",
             message: "정상적으로 폴더를 생성하였습니다",
+            folderId: res.folderId,
         }
     }
 
@@ -146,12 +152,14 @@ export class FolderService {
         keyword: string,
         creator: string,
         page: number,
+        sort: TSort,
         userId?: string,
     ) {
         const res = await this.folderRepository.searchFolder(
             keyword,
             creator,
             page,
+            sort || "DateLatest",
             userId,
         )
         return {

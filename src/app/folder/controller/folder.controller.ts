@@ -129,7 +129,7 @@ export class FolderController {
     @ApiQuery({ type: SearchFolderDto })
     @ApiOperation({ summary: "폴더를 검색하기" })
     async searchFolder(
-        @Query() { keyword, creator, page },
+        @Query() { keyword, creator, page, sort },
         @Headers("authorization") bearer: string,
     ) {
         let id
@@ -142,6 +142,7 @@ export class FolderController {
             keyword,
             creator || "",
             page || 1,
+            sort || "DateLatest",
             id,
         )
     }

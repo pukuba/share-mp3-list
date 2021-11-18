@@ -51,10 +51,19 @@ describe("Audio Service", () => {
         ).audioId
     })
     describe("Create Folder", () => {
-        it("should be return status: 'ok'", async () => {
+        it("should be return status: 'ok' - 1", async () => {
             const res = await service.createFolder(
                 "pukuba@kakao.com",
                 "test-FolderName",
+            )
+            equal(res.status, "ok")
+            folderId = res.folderId
+        })
+
+        it("should be return status: 'ok' - 2", async () => {
+            const res = await service.createFolder(
+                "pukuba@kakao.com",
+                "myTestFolder",
             )
             equal(res.status, "ok")
         })
@@ -68,26 +77,6 @@ describe("Audio Service", () => {
             } catch (e) {
                 equal(e.message, "Folder name is existed")
             }
-        })
-    })
-
-    describe("Search Folder", () => {
-        it("should be return folder list & page info", async () => {
-            const res = await service.searchFolder("test", "", 1)
-            equal(res.pageInfo.count, 1)
-            equal(res.data[0].likeStatus, false)
-            folderId = res.data[0]._id
-        })
-    })
-
-    describe("Add Audio to Folder", () => {
-        it("should be return status: ok", async () => {
-            const res = await service.addAudioToFolder(
-                "pukuba@kakao.com",
-                folderId.toString(),
-                audioId.toString(),
-            )
-            equal(res.status, "ok")
         })
     })
 
@@ -110,6 +99,69 @@ describe("Audio Service", () => {
             const res = await service.like(
                 "pukuba@kakao.com1",
                 folderId.toString(),
+            )
+            equal(res.status, "ok")
+        })
+    })
+
+    describe("Search Folder", () => {
+        it("should be return folder list & page info (sort: DateLatest)", async () => {
+            const res = await service.searchFolder(
+                "test",
+                "",
+                1,
+                "DateLatest",
+                "pukuba@kakao.com",
+            )
+            equal(res.pageInfo.count, 2)
+            equal(res.data[1].likeStatus, true)
+            equal(res.data[1].folderId.toString(), folderId.toString())
+            equal(res.data[1].likes, 1)
+        })
+
+        it("should be return folder list & page info (sort: DateLast)", async () => {
+            const res = await service.searchFolder(
+                "test",
+                "",
+                1,
+                "DateLast",
+                "pukuba@kakao.com",
+            )
+            equal(res.pageInfo.count, 2)
+            equal(res.data[0].likeStatus, true)
+            equal(res.data[0].folderId.toString(), folderId.toString())
+            equal(res.data[0].likes, 1)
+        })
+
+        it("should be return folder list & page info (sort: LikeDesc)", async () => {
+            const res = await service.searchFolder("test", "", 1, "LikeDesc")
+            equal(res.pageInfo.count, 2)
+            equal(res.data[0].likeStatus, false)
+            equal(res.data[0].likes, 1)
+            equal(res.data[0].folderId.toString(), folderId.toString())
+        })
+
+        it("should be return folder list & page info (sort: LikeAsc)", async () => {
+            const res = await service.searchFolder(
+                "test",
+                "",
+                1,
+                "LikeAsc",
+                "pukuba@kakao.com",
+            )
+            equal(res.pageInfo.count, 2)
+            equal(res.data[1].likeStatus, true)
+            equal(res.data[1].likes, 1)
+            equal(res.data[1].folderId.toString(), folderId.toString())
+        })
+    })
+
+    describe("Add Audio to Folder", () => {
+        it("should be return status: ok", async () => {
+            const res = await service.addAudioToFolder(
+                "pukuba@kakao.com",
+                folderId.toString(),
+                audioId.toString(),
             )
             equal(res.status, "ok")
         })

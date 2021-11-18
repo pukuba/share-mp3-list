@@ -106,12 +106,12 @@ export class UserRepository {
             if (deletedCount === 0) throw new Error()
             const folderList = await this.db
                 .collection("folder")
-                .find({ userId: dto.email })
+                .find({ creator: dto.email })
                 .toArray()
 
             await Promise.all([
                 this.db.collection("audio").deleteMany({ userId: dto.email }),
-                this.db.collection("folder").deleteMany({ userId: dto.email }),
+                this.db.collection("folder").deleteMany({ creator: dto.email }),
                 this.db.collection("file").deleteMany({
                     folderId: {
                         $in: folderList.map((folder) => folder._id),

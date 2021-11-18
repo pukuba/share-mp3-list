@@ -10,7 +10,7 @@ import {
 
 import * as crypto from "bcryptjs"
 import { Db, ObjectId } from "mongodb"
-import { FolderEntity, AudioEntity } from "../types"
+import { FolderEntity, AudioEntity, TSort } from "../types"
 
 export class FolderRepository {
     constructor(
@@ -211,9 +211,11 @@ export class FolderRepository {
         keyword: string,
         creator: string,
         page: number,
+        sort: TSort,
         userId?: string,
     ) {
-        let query = {}
+        let query = {},
+            sortOption = {}
         if (keyword) {
             query = {
                 folderName: {
@@ -227,10 +229,20 @@ export class FolderRepository {
                 creator,
             }
         }
+        if (sort === "LikeDesc") {
+            sortOption = { likes: -1 }
+        } else if (sort === "LikeAsc") {
+            sortOption = { likes: 1 }
+        } else if (sort === "DateLatest") {
+            sortOption = { updatedAt: -1 }
+        } else {
+            sortOption = { updatedAt: 1 }
+        }
         const [folderList, cnt] = await Promise.all([
             this.db
                 .collection("folder")
                 .find(query)
+                .sort(sortOption)
                 .skip((Math.max(page - 1), 0) * 10)
                 .limit(10)
                 .toArray() as Promise<(FolderEntity & { _id: ObjectId })[]>,
@@ -262,7 +274,7 @@ export class FolderRepository {
                 if (x?.likeStatus === undefined) {
                     x.likeStatus = false
                 }
-                return x
+                return { ...x, folderId: x._id }
             }),
         }
     }

@@ -1,10 +1,19 @@
 import { ApiProperty, ApiQuery } from "@nestjs/swagger"
 
-import { IsNotEmpty, Length } from "class-validator"
+import { IsNotEmpty, Length, Matches } from "class-validator"
+
+enum Sort {
+    DateLatest,
+    DateLast,
+    /**오름차 */
+    LikeAsc,
+    /**내림차 */
+    LikeDesc,
+}
 
 export class SearchFolderDto {
     @ApiProperty({
-        description: "노래모음1",
+        description: "검색할 키워드",
         required: false,
         name: "keyword",
     })
@@ -18,9 +27,24 @@ export class SearchFolderDto {
     page: number
 
     @ApiProperty({
-        description: "pukuba",
+        description: "작성자 검색",
         required: false,
         name: "creator",
     })
     creator: string
+
+    @ApiProperty({
+        description: "정렬옵션",
+        required: false,
+        name: "sort",
+        example: "DateLatest",
+        enum: Sort,
+    })
+    @Matches(
+        `^${Object.values(Sort)
+            .filter((v) => typeof v !== "number")
+            .join("|")}$`,
+        "i",
+    )
+    sort: "DateLatest" | "DateLast" | "LikeAsc" | "LikeDesc"
 }
