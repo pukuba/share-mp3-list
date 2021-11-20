@@ -79,13 +79,13 @@ export class AudioRepository {
         const [result, count] = await Promise.all([
             this.db
                 .collection("audio")
-                .find({ title: { $regex: new RegExp(keyword, "i") } })
+                .find({ $text: { $search: keyword } })
                 .skip(skip)
                 .limit(take)
                 .toArray(),
             this.db
                 .collection("audio")
-                .find({ title: { $regex: new RegExp(keyword, "i") } })
+                .find({ $text: { $search: keyword } })
                 .count(),
         ])
         return {

@@ -39,6 +39,9 @@ import { configService } from "../services/config.service"
                                 { folderId: 1, userId: 1 },
                                 { unique: true },
                             ),
+                        db
+                            .collection("audio")
+                            .createIndex({ title: "text", userId: "text" }),
                     ])
 
                     return db

@@ -100,10 +100,16 @@ describe("Audio Service", () => {
     })
 
     describe("searchAudio", () => {
-        it("should be return pageInfo", async () => {
-            const pageInfo = await service.searchAudio(1, "t")
-            equal(pageInfo.count, 2)
-            equal(pageInfo.data[0].title.includes("t"), true)
+        it("should be return pageInfo - 1", async () => {
+            const pageInfo = await service.searchAudio(1, "test")
+            equal(pageInfo.count, 1)
+            equal(pageInfo.data[0].title.includes("test"), true)
+        })
+
+        it("should be return pageInfo - 2", async () => {
+            const pageInfo = await service.searchAudio(1, "stay")
+            equal(pageInfo.count, 1)
+            equal(pageInfo.data[0].title.includes("STAY"), true)
         })
     })
 
