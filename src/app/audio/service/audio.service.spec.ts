@@ -19,6 +19,7 @@ describe("Audio Service", () => {
     let audioDb: AudioRepository
     let token: string
     let audioId: ObjectId
+    let audioId2: ObjectId
     before(async () => {
         const module = await Test.createTestingModule({
             imports: [AudioModule],
@@ -37,7 +38,8 @@ describe("Audio Service", () => {
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
         })
     })
-    describe("upload Audio", () => {
+
+    describe("upload AudioByFile", () => {
         it("should be return AudioInfo", async () => {
             const file = {
                 buffer: fs.readFileSync("test/church.mp3"),
@@ -49,7 +51,7 @@ describe("Audio Service", () => {
                 size: 1024,
             }
             const { title, audioId: id } = await service.uploadAudioByFile(
-                "test",
+                "pukuba@kakao.com",
                 file,
                 {
                     name: "test",
@@ -62,10 +64,27 @@ describe("Audio Service", () => {
         })
     })
 
+    describe("upload AudioByYoutubeLink", () => {
+        it("should be return AudioInfo", async () => {
+            const { title, audioId: id } = await service.uploadAudioByLink(
+                "pukuba@kakao.com",
+                {
+                    youtubeLink: "https://youtu.be/ivxgd9jp6kM",
+                    filter: "NightCore",
+                },
+            )
+            equal(
+                title,
+                "The Kid LAROI, Justin Bieber - STAY (Cover by SeoRyoung 박서령)",
+            )
+            audioId2 = id
+        })
+    })
+
     describe("getAudio", () => {
         it("should be return AudioInfo", async () => {
             const audio = await service.getAudio(audioId.toString(), "::1")
-            equal(audio.userId, "test")
+            equal(audio.userId, "pukuba@kakao.com")
             equal(audio.audioId.toString(), audioId.toString())
             equal(audio.views, 1)
             equal(audio.filter, "Default")
@@ -83,15 +102,17 @@ describe("Audio Service", () => {
     describe("searchAudio", () => {
         it("should be return pageInfo", async () => {
             const pageInfo = await service.searchAudio(1, "t")
-            equal(pageInfo.count, 1)
+            equal(pageInfo.count, 2)
             equal(pageInfo.data[0].title.includes("t"), true)
-            equal(pageInfo.data[0].audioId.toString(), audioId.toString())
         })
     })
 
     describe("deleteAudio", () => {
         it("should be return void", async () => {
-            const res = await service.deleteAudio("test", audioId.toString())
+            const res = await service.deleteAudio(
+                "pukuba@kakao.com",
+                audioId.toString(),
+            )
             equal(res, undefined)
         })
     })

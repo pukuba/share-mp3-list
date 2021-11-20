@@ -13,33 +13,14 @@ export class FFmpegService {
         const info = await ytdl.getInfo(url)
         const len = info.videoDetails.lengthSeconds
         const title = info.videoDetails.title
-        if (~~len >= 60 * 5) {
+        if (~~len >= 60 * 6) {
             throw new Error("audio is too long")
-        }
-        const audioLow = []
-        const audioMedium = []
-        for (const item of info.formats) {
-            if (item?.audioQuality === "AUDIO_QUALITY_MEDIUM") {
-                audioMedium.push(item.url)
-                break
-            } else if (item?.audioQuality === "AUDIO_QUALITY_LOW") {
-                audioLow.push(item.url)
-            }
-        }
-        let downloadURL = ""
-        if (audioMedium.length) {
-            downloadURL = audioMedium[0]
-        } else if (audioLow.length) {
-            downloadURL = audioLow[0]
-        }
-        if (!downloadURL) {
-            throw new Error("no audio found")
         }
         try {
             await exec(`
-                ffmpeg -i '${downloadURL}' ${this.filtering(filter)} \
-                -c:a mp3 -strict -2 -b:a 192k \
-                test/${filename}-1.mp3 -y
+                yt-dlp -f bestaudio -o test/${filename}.mp3 -x --audio-format mp3 ${url} --exec \
+                "ffmpeg -i {} ${this.filtering(filter)} \
+                test/${filename}-1.mp3 -y && rm {}"
             `)
             return title
         } catch (e) {
@@ -53,7 +34,7 @@ export class FFmpegService {
             await exec(`
                 ffmpeg -i test/${filename}.mp3 ${this.filtering(filter)} \
                 -c:a mp3 -strict -2 -b:a 192k \
-                test/${filename}-1.mp3 -y
+                test/${filename}-1.mp3 -y && rm test/${filename}.mp3
             `)
         } catch (e) {
             console.log(e)
@@ -63,7 +44,9 @@ export class FFmpegService {
     async removeFile(filename: string) {
         try {
             await deleteFile(`test/${filename}.mp3`)
-        } catch {}
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     private filtering(filter: string) {
@@ -73,9 +56,9 @@ export class FFmpegService {
             filter = ` -i ./test/church.mp3 -filter_complex \
             '[0] [1] afir=dry=10:wet=10 [reverb]; [0] [reverb] amix=inputs=2:weights=1' `
         } else if (filter === "NightCore") {
-            filter = `-filter:a "atempo=1.06,asetrate=44100*1.25"`
+            filter = `-filter:a atempo=1.06,asetrate=44100*1.25`
         } else if (filter === "NoiseFilter") {
-            filter = `-af "arnndn=m=./test/mp.rnnn"`
+            filter = `-af arnndn=m=./test/mp.rnnn`
         } else {
             filter = ""
         }
