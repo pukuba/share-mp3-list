@@ -26,6 +26,21 @@ export class JwtManipulationService {
     generateJwtToken(tokenInfo: IGenerateJwtToken) {
         return jwt.sign(tokenInfo, configService.getEnv("JWT_TOKEN"))
     }
+
+    decodeVerifyJwtToken(token: string) {
+        if (!token) throw new Error()
+        try {
+            const decodedJwtData = jwt.verify(
+                token,
+                configService.getEnv("JWT_TOKEN"),
+            ) as jwt.JwtPayload
+            return decodedJwtData
+        } catch (e) {
+            throw new UnauthorizedException(
+                "이메일 인증 토큰이 올바르지 않습니다",
+            )
+        }
+    }
 }
 
 const jwtManipulationService = new JwtManipulationService()

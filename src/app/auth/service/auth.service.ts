@@ -48,7 +48,8 @@ export class AuthService {
                 "이미 중복된 이메일, 혹은 닉네임, 휴대번호가 있습니다.",
             )
 
-        const jwtResult = this.jwtService.decodeJwtToken(verificationToken)
+        const jwtResult =
+            this.jwtService.decodeVerifyJwtToken(verificationToken)
         if (jwtResult.id !== email)
             throw new UnauthorizedException(
                 "이메일 인증이 만료되었거나 휴대번호 인증절차가 이루어지지 않았습니다.",
