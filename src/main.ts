@@ -7,9 +7,9 @@ async function bootstrap(): Promise<void> {
     app.setGlobalPrefix("api")
 
     const options = new DocumentBuilder()
-        .setTitle("form-clay REST API")
-        .setDescription("The form-clay API description")
-        .setVersion("1.1")
+        .setTitle("Share Mp3 List API")
+        .setDescription("The Share-Mp3-List API description")
+        .setVersion("1.2")
         .setBasePath("api")
         .addBearerAuth()
         .build()
