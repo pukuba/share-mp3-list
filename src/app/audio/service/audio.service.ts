@@ -46,7 +46,7 @@ export class AudioService {
                     throw new BadRequestException("validate error")
                 }
                 try {
-                    const name = `${Date.now()}-${dto.name}`
+                    const name = `${Date.now()}-${this.createRandomKey()}`
                     await this.ffmpegService.filterByFile(
                         file.buffer,
                         name,
@@ -60,8 +60,7 @@ export class AudioService {
                         "audio",
                         `test/${name}-1.mp3`,
                     )
-                    const [_, __, newAudio] = await Promise.all([
-                        this.ffmpegService.removeFile(`${name}`),
+                    const [_, newAudio] = await Promise.all([
                         this.ffmpegService.removeFile(`${name}-1`),
                         this.audioRepository.uploadAudio(
                             userId,
@@ -83,18 +82,22 @@ export class AudioService {
     async uploadAudioByLink(userId: string, payload: UploadAudioByLinkDto) {
         const dto = new UploadAudioByLinkDto()
         dto.youtubeLink = payload.youtubeLink
+        dto.filter = payload.filter
         return await validate(dto, { validationError: { target: false } }).then(
             async (errors) => {
                 if (errors.length > 0) {
+                    console.log(errors)
                     throw new BadRequestException(errors)
                 }
                 try {
-                    const name = `${Date.now()}-${userId}`
-                    const title = await this.ffmpegService.filterByYoutube(
-                        payload.youtubeLink,
-                        name,
-                        dto.filter,
-                    )
+                    const name = `${Date.now()}-${this.createRandomKey()}`
+                    const title =
+                        payload.name ||
+                        (await this.ffmpegService.filterByYoutube(
+                            payload.youtubeLink,
+                            name,
+                            dto.filter,
+                        ))
                     const duration = await this.ffmpegService.getAudioDuration(
                         `test/${name}-1.mp3`,
                     )
@@ -103,9 +106,8 @@ export class AudioService {
                         "audio",
                         `test/${name}-1.mp3`,
                     )
-                    const [_, __, newAudio] = await Promise.all([
-                        this.ffmpegService.removeFile(`test/${name}.mp3`),
-                        this.ffmpegService.removeFile(`test/${name}-1.mp3`),
+                    const [_, newAudio] = await Promise.all([
+                        this.ffmpegService.removeFile(`${name}-1`),
                         this.audioRepository.uploadAudio(
                             userId,
                             { name: title, filter: dto.filter, duration },
@@ -113,7 +115,7 @@ export class AudioService {
                         ),
                     ])
                     return newAudio
-                } catch {
+                } catch (e) {
                     throw new BadRequestException("Error uploading file")
                 }
             },
@@ -139,5 +141,12 @@ export class AudioService {
 
     async deleteAudio(userId: string, audioId: string) {
         return await this.audioRepository.deleteAudio(userId, audioId)
+    }
+
+    private createRandomKey() {
+        return (
+            (Math.random() + 1).toString(36).substring(2, 15) +
+            (Math.random() + 1).toString(36).substring(2, 15)
+        )
     }
 }

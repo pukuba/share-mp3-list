@@ -5,6 +5,7 @@ enum Filter {
     NightCore,
     Stereo,
     Default,
+    NoiseFilter,
 }
 
 export class UploadAudioByFileDto {
