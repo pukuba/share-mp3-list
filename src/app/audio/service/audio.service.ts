@@ -55,7 +55,7 @@ export class AudioService {
                     const duration = await this.ffmpegService.getAudioDuration(
                         `test/${name}-1.mp3`,
                     )
-                    const url = await this.awsService.uploadFile(
+                    await this.awsService.uploadFile(
                         `${name}.mp3`,
                         "audio",
                         `test/${name}-1.mp3`,
@@ -65,7 +65,7 @@ export class AudioService {
                         this.audioRepository.uploadAudio(
                             userId,
                             { ...payload, duration },
-                            url,
+                            `audio/${name}.mp3`,
                         ),
                     ])
                     return newAudio
@@ -101,7 +101,7 @@ export class AudioService {
                     const duration = await this.ffmpegService.getAudioDuration(
                         `test/${name}-1.mp3`,
                     )
-                    const url = await this.awsService.uploadFile(
+                    await this.awsService.uploadFile(
                         `${name}.mp3`,
                         "audio",
                         `test/${name}-1.mp3`,
@@ -111,7 +111,7 @@ export class AudioService {
                         this.audioRepository.uploadAudio(
                             userId,
                             { name: title, filter: dto.filter, duration },
-                            url,
+                            `/audio/${name}.mp3`,
                         ),
                     ])
                     return newAudio
