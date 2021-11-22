@@ -114,7 +114,7 @@ export class AuthService {
         }
         await this.redisService.deleteData(email)
         const responseData = {
-            verificationToken: ` ${this.jwtService.generateJwtToken({
+            verificationToken: `${this.jwtService.generateJwtToken({
                 id: email,
                 exp: Math.floor(Date.now() / 1000) + 60 * 15,
             })}`,

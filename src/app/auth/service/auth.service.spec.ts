@@ -40,7 +40,8 @@ describe("UserService", () => {
             verificationToken = res.verificationToken
             equal("verificationToken" in res, true)
             equal(
-                jwtManipulationService.decodeJwtToken(verificationToken, "id"),
+                jwtManipulationService.decodeVerifyJwtToken(verificationToken)
+                    .id,
                 "pukuba@kakao.com",
             )
         })
