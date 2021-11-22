@@ -65,7 +65,7 @@ export class AudioService {
                         this.audioRepository.uploadAudio(
                             userId,
                             { ...payload, duration },
-                            `audio/${name}.mp3`,
+                            `https://cdn.pukuba.dev/sharemp3/audio/${name}.mp3`,
                         ),
                     ])
                     return newAudio
@@ -111,7 +111,7 @@ export class AudioService {
                         this.audioRepository.uploadAudio(
                             userId,
                             { name: title, filter: dto.filter, duration },
-                            `/audio/${name}.mp3`,
+                            `https://cdn.pukuba.dev/sharemp3/audio/${name}.mp3`,
                         ),
                     ])
                     return newAudio
