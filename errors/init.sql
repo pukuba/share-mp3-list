@@ -1,0 +1,20 @@
+CREATE DATABASE IF NOT EXISTS dev;
+CREATE DATABASE IF NOT EXISTS production;
+
+CREATE TABLE production.logs (
+    id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    ip VARCHAR(15) NOT NULL,
+    created_at DATETIME NOT NULL,
+    now_url TEXT NOT NULL,
+    prev_url TEXT,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE dev.logs (
+    id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    ip VARCHAR(15) NOT NULL,
+    created_at DATETIME NOT NULL,
+    now_url TEXT NOT NULL,
+    prev_url TEXT,
+    PRIMARY KEY (id)
+);
