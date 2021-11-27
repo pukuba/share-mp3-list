@@ -38,12 +38,9 @@ export class UserRepository {
 
     async validateUser(dto: LoginDto) {
         let user
-        try {
-            user = await this.db
-                .collection("user")
-                .findOne({ email: dto.email })
-        } catch {
-            throw new BadRequestException("계정이 존재하지 않습니다.")
+        user = await this.db.collection("user").findOne({ email: dto.email })
+        if (user === null) {
+            throw new NotFoundException("계정이 존재하지 않습니다")
         }
         const isValidPassword = crypto.compareSync(dto.password, user.password)
         if (!isValidPassword)
