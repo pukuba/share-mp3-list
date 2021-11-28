@@ -80,17 +80,17 @@ export class AudioController {
         )
     }
 
-    @Get(":audioId")
-    @ApiOperation({ summary: "음원 가져오기" })
-    async getAudio(@Ip() ip: string, @Param("audioId") audioId: string) {
-        return this.audioService.getAudio(audioId, ip)
-    }
-
     @Get("/search")
     @ApiQuery({ type: SearchAudioDto })
     @ApiOperation({ summary: "음원을 검색" })
     async searchAudio(@Query() { page, keyword }) {
         return this.audioService.searchAudio(page, keyword)
+    }
+
+    @Get(":audioId")
+    @ApiOperation({ summary: "음원 가져오기" })
+    async getAudio(@Ip() ip: string, @Param("audioId") audioId: string) {
+        return this.audioService.getAudio(audioId, ip)
     }
 
     @Delete(":audioId")

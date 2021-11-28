@@ -27,6 +27,14 @@ export class AudioRepository {
         @Inject("DATABASE_CONNECTION")
         private db: Db,
     ) {}
+
+    private isValidId(id: string | ObjectId) {
+        const valid = ObjectId.isValid(id)
+        if (valid === false) {
+            throw new BadRequestException("올바르지않은 Audio ID 입니다")
+        }
+    }
+
     async uploadAudio(userId: string, dto, url: string): Promise<AudioEntity> {
         const audio = {
             userId: userId,
@@ -49,6 +57,7 @@ export class AudioRepository {
     }
 
     async getAudioByAudioId(audioId: string): Promise<AudioEntity> {
+        this.isValidId(audioId)
         const audio = await this.db
             .collection("audio")
             .findOne({ _id: new ObjectId(audioId) })
@@ -59,6 +68,7 @@ export class AudioRepository {
     }
 
     async updateAudioViewCount(audioId: string, count: number) {
+        this.isValidId(audioId)
         const audio = await this.db
             .collection("audio")
             .updateOne(
@@ -95,6 +105,7 @@ export class AudioRepository {
     }
 
     async deleteAudio(userId: string, audioId: string) {
+        this.isValidId(audioId)
         const { deletedCount } = await this.db
             .collection("audio")
             .deleteOne({ userId, _id: new ObjectId(audioId) })
