@@ -15,10 +15,7 @@ import { configService } from "src/shared/services/config.service"
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(
-        @Inject("DATABASE_CONNECTION")
-        private userRepository: UserRepository,
-    ) {
+    constructor(private userRepository: UserRepository) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             secretOrKey: configService.getEnv("JWT_TOKEN"),
@@ -37,7 +34,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 id: user.id,
                 username: user.username,
             }
-        } catch {
+        } catch (e) {
+            console.log(e)
             throw new UnauthorizedException()
         }
     }

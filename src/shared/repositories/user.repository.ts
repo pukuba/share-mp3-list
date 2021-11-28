@@ -64,21 +64,21 @@ export class UserRepository {
     }
 
     async getUserByEmail(email: string) {
-        try {
-            return await this.db.collection("user").findOne({ email })
-        } catch (err) {
+        const res = await this.db.collection("user").findOne({ email })
+        if (res === null) {
             throw new NotFoundException("계정이 존재하지 않습니다.")
         }
+        return res
     }
 
     async getUserByUsername(username: string) {
-        try {
-            return await this.db.collection("user").findOne({
-                username,
-            })
-        } catch (err) {
+        const res = await this.db.collection("user").findOne({
+            username,
+        })
+
+        if (res === null)
             throw new NotFoundException("계정이 존재하지 않습니다")
-        }
+        return res
     }
 
     async updateUserPassword(email: string, password: string) {
