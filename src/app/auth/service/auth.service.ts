@@ -66,7 +66,7 @@ export class AuthService {
         ])
         const token = this.jwtService.generateJwtToken({
             id: dto.email,
-            exp: Math.floor(Date.now() / 1000) + 60 * 60,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
         })
         const responseData = {
             accessToken: token,
@@ -142,7 +142,7 @@ export class AuthService {
     async signIn(dto: LoginDto) {
         const token: string = this.jwtService.generateJwtToken({
             id: dto.email,
-            exp: Math.floor(Date.now() / 1000) + 60 * 15,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
         })
         const responseData = {
             accessToken: token,
