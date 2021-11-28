@@ -48,6 +48,85 @@ export class FolderController {
         )
     }
 
+    @Get("/search")
+    @ApiQuery({ type: SearchFolderDto })
+    @ApiOperation({ summary: "폴더를 검색하기" })
+    async searchFolder(
+        @Query() { keyword, creator, page, sort },
+        @Headers("authorization") bearer: string,
+    ) {
+        let id
+        try {
+            id = jwtManipulationService.decodeJwtToken(bearer, "id")
+        } catch {
+            id = undefined
+        }
+        return await this.folderService.searchFolder(
+            keyword || "",
+            creator || "",
+            page || 1,
+            sort || "DateLatest",
+            id,
+        )
+    }
+
+    @Post("/like/:folderId")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "폴더에 좋아요 표시 or 좋아요 취소" })
+    async likeFolder(
+        @Headers("authorization") bearer: string,
+        @Param("folderId") folderId: string,
+    ) {
+        return await this.folderService.like(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            folderId,
+        )
+    }
+
+    @Get("/like/:page")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "좋아요 리스트 가져오기" })
+    async getLikeFolders(
+        @Headers("authorization") bearer: string,
+        @Param("page") page: number,
+    ) {
+        return await this.folderService.getLikeFolders(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            page || 1,
+        )
+    }
+
+    @Delete("/:folderId")
+    @ApiBearerAuth()
+    @UseGuards(AuthGuard("jwt"))
+    @ApiOperation({ summary: "폴더를 삭제" })
+    async delFolder(
+        @Headers("authorization") bearer: string,
+        @Param("folderId") folderId: string,
+    ) {
+        return await this.folderService.delFolder(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+            folderId,
+        )
+    }
+
+    @Get("/:folderId")
+    @ApiOperation({ summary: "폴더의 정보 가져오기" })
+    async getFolder(
+        @Headers("authorization") bearer: string,
+        @Param("folderId") folderId: string,
+    ) {
+        let id
+        try {
+            id = jwtManipulationService.decodeJwtToken(bearer, "id")
+        } catch {
+            id = undefined
+        }
+        return await this.folderService.getFolder(folderId, id)
+    }
+
     @Patch("/:folderId")
     @ApiBearerAuth()
     @UseGuards(AuthGuard("jwt"))
@@ -93,85 +172,6 @@ export class FolderController {
             jwtManipulationService.decodeJwtToken(bearer, "id"),
             folderId,
             audioId,
-        )
-    }
-
-    @Delete("/:folderId")
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "폴더를 삭제" })
-    async delFolder(
-        @Headers("authorization") bearer: string,
-        @Param("folderId") folderId: string,
-    ) {
-        return await this.folderService.delFolder(
-            jwtManipulationService.decodeJwtToken(bearer, "id"),
-            folderId,
-        )
-    }
-
-    @Get("/:folderId")
-    @ApiOperation({ summary: "폴더의 정보 가져오기" })
-    async getFolder(
-        @Headers("authorization") bearer: string,
-        @Param("folderId") folderId: string,
-    ) {
-        let id
-        try {
-            id = jwtManipulationService.decodeJwtToken(bearer, "id")
-        } catch {
-            id = undefined
-        }
-        return await this.folderService.getFolder(folderId, id)
-    }
-
-    @Get("/search")
-    @ApiQuery({ type: SearchFolderDto })
-    @ApiOperation({ summary: "폴더를 검색하기" })
-    async searchFolder(
-        @Query() { keyword, creator, page, sort },
-        @Headers("authorization") bearer: string,
-    ) {
-        let id
-        try {
-            id = jwtManipulationService.decodeJwtToken(bearer, "id")
-        } catch {
-            id = undefined
-        }
-        return await this.folderService.searchFolder(
-            keyword,
-            creator || "",
-            page || 1,
-            sort || "DateLatest",
-            id,
-        )
-    }
-
-    @Post("/like/:folderId")
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "폴더에 좋아요 표시 or 좋아요 취소" })
-    async likeFolder(
-        @Headers("authorization") bearer: string,
-        @Param("folderId") folderId: string,
-    ) {
-        return await this.folderService.like(
-            jwtManipulationService.decodeJwtToken(bearer, "id"),
-            folderId,
-        )
-    }
-
-    @Get("/like/:page")
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard("jwt"))
-    @ApiOperation({ summary: "좋아요 리스트 가져오기" })
-    async getLikeFolders(
-        @Headers("authorization") bearer: string,
-        @Param("page") page: number,
-    ) {
-        return await this.folderService.getLikeFolders(
-            jwtManipulationService.decodeJwtToken(bearer, "id"),
-            page || 1,
         )
     }
 }

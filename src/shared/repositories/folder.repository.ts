@@ -18,7 +18,15 @@ export class FolderRepository {
         private db: Db,
     ) {}
 
+    private isValidId(id: string | ObjectId, keyword = "폴더") {
+        const valid = ObjectId.isValid(id)
+        if (valid === false) {
+            throw new BadRequestException(`잘못된 ${keyword} id 입니다`)
+        }
+    }
+
     async like(folderId: string, userId: string) {
+        this.isValidId(folderId)
         const folder = await this.db.collection("like").findOne({
             folderId: new ObjectId(folderId),
             userId,
@@ -53,6 +61,7 @@ export class FolderRepository {
     async getFolderByFolderId(
         folderId: string,
     ): Promise<FolderEntity & { _id: ObjectId }> {
+        this.isValidId(folderId)
         const folder = (await this.db.collection("folder").findOne({
             _id: new ObjectId(folderId),
         })) as FolderEntity & { _id: ObjectId }
@@ -82,6 +91,7 @@ export class FolderRepository {
     }
 
     async getFolderInfo(folderId: string, userId?: string) {
+        this.isValidId(folderId)
         const folder = await this.db.collection("folder").findOne({
             _id: new ObjectId(folderId),
         })
@@ -138,6 +148,8 @@ export class FolderRepository {
     }
 
     async addAudioToFolder(folderId: string, audioId: string) {
+        this.isValidId(folderId)
+        this.isValidId(audioId, "음원")
         const song = await this.db
             .collection("audio")
             .findOne({ _id: new ObjectId(audioId) })
@@ -162,6 +174,7 @@ export class FolderRepository {
     }
 
     async delAudioToFolder(folderId: string, audioId: string) {
+        this.isValidId(folderId)
         const { deletedCount } = await this.db.collection("file").deleteOne({
             folderId: new ObjectId(folderId),
             audioId: new ObjectId(audioId),
@@ -178,6 +191,7 @@ export class FolderRepository {
     }
 
     async delFolder(folderId: string, creator: string) {
+        this.isValidId(folderId)
         const { deletedCount } = await this.db.collection("folder").deleteOne({
             _id: new ObjectId(folderId),
             creator,
@@ -192,7 +206,8 @@ export class FolderRepository {
         })
     }
 
-    async updateFolder(folderId: string | ObjectId, folderName: string) {
+    async updateFolder(folderId: ObjectId | string, folderName: string) {
+        this.isValidId(folderId)
         const { modifiedCount } = await this.db.collection("folder").updateOne(
             { _id: new ObjectId(folderId) },
             {
