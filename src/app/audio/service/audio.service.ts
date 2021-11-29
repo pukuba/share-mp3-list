@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm"
 
 // Other dependencies
 import { validate } from "class-validator"
+import * as fs from "fs"
 
 // Local files
 import { UploadAudioByFileDto, UploadAudioByLinkDto } from "../dto"
@@ -70,7 +71,6 @@ export class AudioService {
                     ])
                     return newAudio
                 } catch (e) {
-                    console.log(e)
                     throw new BadRequestException(
                         "올바르지 않은 음원이거나, 길이가 너무 깁니다 max(300sec)",
                     )
@@ -91,13 +91,14 @@ export class AudioService {
                 }
                 try {
                     const name = `${Date.now()}-${this.createRandomKey()}`
-                    const title =
-                        payload.name ||
-                        (await this.ffmpegService.filterByYoutube(
+                    const secondTitle =
+                        await this.ffmpegService.filterByYoutube(
                             payload.youtubeLink,
                             name,
                             dto.filter,
-                        ))
+                        )
+                    const title = payload.name || secondTitle
+
                     const duration = await this.ffmpegService.getAudioDuration(
                         `test/${name}-1.mp3`,
                     )
@@ -116,6 +117,7 @@ export class AudioService {
                     ])
                     return newAudio
                 } catch (e) {
+                    console.log(e)
                     throw new BadRequestException("Error uploading file")
                 }
             },
