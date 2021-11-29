@@ -64,7 +64,7 @@ export class FolderController {
         return await this.folderService.searchFolder(
             keyword || "",
             creator || "",
-            page || 1,
+            ~~page || 1,
             sort || "DateLatest",
             id,
         )
@@ -94,7 +94,7 @@ export class FolderController {
     ) {
         return await this.folderService.getLikeFolders(
             jwtManipulationService.decodeJwtToken(bearer, "id"),
-            page || 1,
+            ~~page || 1,
         )
     }
 

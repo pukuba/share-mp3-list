@@ -36,10 +36,12 @@ export class FolderService {
         if (!getFolder) {
             throw new BadRequestException("폴더가 존재하지 않습니다")
         }
-        await this.folderRepository.like(folderId, userId)
+        const res = await this.folderRepository.like(folderId, userId)
         return {
             status: "ok",
-            message: "정상적으로 좋아요를 눌렀습니다 / 취소했습니다",
+            message: `정상적으로 좋아요를 ${
+                res === true ? "눌렀습니다" : "취소했습니다"
+            }`,
         }
     }
 
@@ -145,7 +147,7 @@ export class FolderService {
         if (!getFolder) {
             throw new BadRequestException("폴더가 존재하지 않습니다")
         }
-        return await this.folderRepository.getFolderInfo(folderId, userId)
+        return getFolder
     }
 
     async searchFolder(

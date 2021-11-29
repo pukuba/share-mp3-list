@@ -43,6 +43,7 @@ export class FolderRepository {
                         { $inc: { likes: -1 } },
                     ),
             ])
+            return false
         } else {
             await Promise.all([
                 this.db
@@ -55,6 +56,7 @@ export class FolderRepository {
                         { $inc: { likes: 1 } },
                     ),
             ])
+            return true
         }
     }
 
@@ -125,7 +127,7 @@ export class FolderRepository {
             audioList: audios.map((audio) => {
                 return {
                     audioId: audio._id,
-                    audioName: audio.title,
+                    audioTitle: audio.title,
                     audioUrl: audio.url,
                     audioViews: audio.views,
                     userId: audio.userId,
