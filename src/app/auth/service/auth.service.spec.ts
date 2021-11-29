@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service"
 import { deepStrictEqual as equal } from "assert"
 
 import { jwtManipulationService } from "src/shared/services/jwt.manipulation.service"
-import { RedisService } from "src/shared/Services/redis.service"
+import { RedisService } from "src/shared/services/redis.service"
 import { AuthModule } from "../auth.module"
 import { UserRepository } from "src/shared/repositories/user.repository"
 
