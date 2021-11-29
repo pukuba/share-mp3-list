@@ -37,6 +37,7 @@ import { AudioService } from "../service/audio.service"
 import {
     UploadAudioByFileDto,
     UpdateAudioDto,
+    FilterAudioDto,
     UploadAudioByLinkDto,
     SearchAudioDto,
 } from "../dto"
@@ -85,6 +86,13 @@ export class AudioController {
     @ApiOperation({ summary: "음원을 검색" })
     async searchAudio(@Query() { page, keyword }) {
         return this.audioService.searchAudio(page, keyword)
+    }
+
+    @Get("/main")
+    @ApiQuery({ type: FilterAudioDto })
+    @ApiOperation({ summary: "필터로만 음원 가져오기" })
+    async filterAudio(@Query() { page, filter }) {
+        return this.audioService.getFilterAudio(page, filter)
     }
 
     @Get(":audioId")

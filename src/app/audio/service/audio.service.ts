@@ -23,6 +23,10 @@ export class AudioService {
         private readonly audioRepository: AudioRepository,
     ) {}
 
+    async getFilterAudio(page, filter = "Latest") {
+        return await this.audioRepository.getFilterAudio(page, filter)
+    }
+
     async uploadAudioByFile(
         userId: string,
         file: IFile,

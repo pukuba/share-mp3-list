@@ -84,8 +84,8 @@ export class AudioRepository {
         page: number,
         keyword = "",
     ): Promise<{ count: number; data: AudioEntity[] }> {
-        const skip = Math.max(page - 1, 0) * 20
-        const take = 20
+        const skip = Math.max(page - 1, 0) * 10
+        const take = 10
         const [result, count] = await Promise.all([
             this.db
                 .collection("audio")
@@ -129,17 +129,32 @@ export class AudioRepository {
         }
     }
 
-    // async patchMedia(userId: string, mediaId: string, dto: UpdateMediaDto) {
-    //     try {
-    //         const audio = await this.db.collection("audio").findOne({
-    //             mediaId,
-    //             userId,
-    //         })
-    //         media.title = dto.title || media.title
-    //         media.description = dto.description || media.description
-    //         return await this.save(media)
-    //     } catch {
-    //         throw new NotFoundException("해당 영상이 존재하지 않습니다")
-    //     }
-    // }
+    async getFilterAudio(page, filter) {
+        const skip = Math.max(page - 1, 0) * 10
+        let sort
+        if (filter === "Latest") {
+            sort = { _id: -1 }
+        } else if (filter === "Last") {
+            sort = { _id: 1 }
+        } else if (filter === "ViewsDesc") {
+            sort = { views: -1 }
+        } else {
+            sort = { views: 1 }
+        }
+        const take = 10
+        const [result, count] = await Promise.all([
+            this.db
+                .collection("audio")
+                .find({})
+                .sort(sort)
+                .skip(skip)
+                .limit(take)
+                .toArray(),
+            this.db.collection("audio").countDocuments(),
+        ])
+        return {
+            data: result.map(this.formatAudioEntity),
+            count,
+        }
+    }
 }
