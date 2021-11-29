@@ -1,6 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing"
 import { INestApplication } from "@nestjs/common"
-import { deepStrictEqual as deepEqual } from "assert"
+import { deepStrictEqual as deepEqual, equal } from "assert"
 import * as request from "supertest"
 import { ApplicationModule } from "./../src/app.module"
 import { RedisService } from "src/shared/services/redis.service"
@@ -8,6 +8,7 @@ import { jwtManipulationService } from "src/shared/services/jwt.manipulation.ser
 describe("AppController (e2e)", () => {
     let app: INestApplication
     let token: string
+    let audioId: string
     const redisService = new RedisService()
     before(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -52,7 +53,6 @@ describe("AppController (e2e)", () => {
     })
 
     describe("Audio Module", () => {
-        let audioId: string
         it("method: POST /v1/audio/link", async () => {
             const { body } = await request(app.getHttpServer())
                 .post("/v1/audio/link")
@@ -85,6 +85,76 @@ describe("AppController (e2e)", () => {
                 .set("Authorization", token)
                 .expect(200)
             deepEqual(body.title, "Stay NightCore")
+        })
+    })
+
+    describe("Folder Module", () => {
+        let folderId: string
+        it("method: POST /v1/folder", async () => {
+            const { body } = await request(app.getHttpServer())
+                .post("/v1/folder")
+                .set("Content-Type", "application/json")
+                .set("Authorization", token)
+                .send({
+                    folderName: "e2e-test-folder",
+                })
+                .expect(201)
+            deepEqual(body.status, "ok")
+            deepEqual(body.message, "정상적으로 폴더를 생성하였습니다")
+            folderId = body.folderId
+        })
+
+        it("method: POST /v1/folder/:folderId/:audioId", async () => {
+            const { body } = await request(app.getHttpServer())
+                .post(`/v1/folder/${folderId}/${audioId}`)
+                .set("Content-Type", "application/json")
+                .set("Authorization", token)
+                .expect(201)
+            equal(body.status, "ok")
+            equal(body.message, "정상적으로 음원이 폴더에 추가되었습니다")
+        })
+
+        it("method: POST /v1/folder/like/:folderId", async () => {
+            const { body } = await request(app.getHttpServer())
+                .post(`/v1/folder/like/${folderId}`)
+                .set("Content-Type", "application/json")
+                .set("Authorization", token)
+                .expect(201)
+            equal(body.status, "ok")
+            equal(body.message, "정상적으로 좋아요를 눌렀습니다")
+        })
+
+        it("method: GET /v1/folder/like/1", async () => {
+            const { body } = await request(app.getHttpServer())
+                .get(`/v1/folder/like/1`)
+                .set("Content-Type", "application/json")
+                .set("Authorization", token)
+                .expect(200)
+            deepEqual(body.pageInfo.count, 1)
+            deepEqual(body.pageInfo.page, 1)
+        })
+
+        it("method: GET /v1/folder/search", async () => {
+            const { body } = await request(app.getHttpServer())
+                .get(`/v1/folder/search?page=1&keyword=e2e`)
+                .set("Content-Type", "application/json")
+                .set("Authorization", token)
+                .expect(200)
+            deepEqual(body.pageInfo.count, 1)
+            deepEqual(body.pageInfo.page, 1)
+            deepEqual(body.data[0].folderName, "e2e-test-folder")
+        })
+
+        it("method: GET /v1/folder/:folderId", async () => {
+            const { body } = await request(app.getHttpServer())
+                .get(`/v1/folder/${folderId}`)
+                .set("Content-Type", "application/json")
+                .set("Authorization", token)
+                .expect(200)
+            deepEqual(body.folderName, "e2e-test-folder")
+            deepEqual(body.creator, "pukuba@kakao.com")
+            deepEqual(body.likeStatus, true)
+            deepEqual(body.audioList[0].audioTitle, "Stay NightCore")
         })
     })
 })
