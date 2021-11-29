@@ -67,6 +67,15 @@ export class AudioRepository {
         return this.formatAudioEntity(audio)
     }
 
+    async getUploaderByAudio(id: string): Promise<AudioEntity[]> {
+        const audios = await this.db
+            .collection("audio")
+            .find({ userId: id })
+            .sort({ _id: -1 })
+            .toArray()
+        return audios.map(this.formatAudioEntity)
+    }
+
     async updateAudioViewCount(audioId: string, count: number) {
         this.isValidId(audioId)
         const audio = await this.db

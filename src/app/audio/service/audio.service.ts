@@ -27,6 +27,10 @@ export class AudioService {
         return await this.audioRepository.getFilterAudio(page, filter)
     }
 
+    async getUploaderByAudio(id: string) {
+        return await this.audioRepository.getUploaderByAudio(id)
+    }
+
     async uploadAudioByFile(
         userId: string,
         file: IFile,

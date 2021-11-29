@@ -95,6 +95,15 @@ export class AudioController {
         return this.audioService.getFilterAudio(page, filter)
     }
 
+    @Get("/my-audios")
+    @ApiBearerAuth()
+    @ApiOperation({ summary: "업로더로 음원 가져오기" })
+    async getUploaderByAudio(@Headers("authorization") bearer: string) {
+        return this.audioService.getUploaderByAudio(
+            jwtManipulationService.decodeJwtToken(bearer, "id"),
+        )
+    }
+
     @Get(":audioId")
     @ApiOperation({ summary: "음원 가져오기" })
     async getAudio(@Ip() ip: string, @Param("audioId") audioId: string) {
