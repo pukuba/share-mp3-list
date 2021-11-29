@@ -9,7 +9,7 @@ async function bootstrap(): Promise<void> {
     const options = new DocumentBuilder()
         .setTitle("Share Mp3 List API")
         .setDescription("The Share-Mp3-List API description")
-        .setVersion("1.2")
+        .setVersion("1.3")
         .setBasePath("api")
         .addBearerAuth()
         .build()
