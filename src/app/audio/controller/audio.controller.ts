@@ -106,8 +106,13 @@ export class AudioController {
 
     @Get(":audioId")
     @ApiOperation({ summary: "음원 가져오기" })
-    async getAudio(@Ip() ip: string, @Param("audioId") audioId: string) {
-        return this.audioService.getAudio(audioId, ip)
+    async getAudio(
+        @Headers("cf-connecting-ip") ip1: string,
+        @Headers("x-forwarded-for") ip2: string,
+        @Param("audioId") audioId: string,
+    ) {
+        console.log(ip1 || ip2)
+        return this.audioService.getAudio(audioId, ip1 || ip2)
     }
 
     @Delete(":audioId")

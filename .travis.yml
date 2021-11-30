@@ -12,7 +12,6 @@ dist: xenial
 addons:
     snaps:
         - ffmpeg
-        - node --channel=14/stable --classic
 
 cache:
     directories:
@@ -22,7 +21,8 @@ before_install:
     - sudo apt update -y
     - sudo apt install software-properties-common -y
     - sudo add-apt-repository ppa:deadsnakes/ppa -y
-    - sudo sudo apt install python3.8
+    - sudo apt install python -y
+    - python --version
     - sudo wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp
     - sudo chmod a+rx /usr/local/bin/yt-dlp
 
