@@ -87,6 +87,10 @@ export class AudioService {
         )
     }
 
+    async randomAudio() {
+        return await this.audioRepository.randomAudio()
+    }
+
     async uploadAudioByLink(userId: string, payload: UploadAudioByLinkDto) {
         const dto = new UploadAudioByLinkDto()
         dto.youtubeLink = payload.youtubeLink

@@ -88,6 +88,12 @@ export class AudioController {
         return this.audioService.searchAudio(page, keyword)
     }
 
+    @Get("/random")
+    @ApiOperation({ summary: "랜덤 음원 추천" })
+    async randomAudio() {
+        return this.audioService.randomAudio()
+    }
+
     @Get("/main")
     @ApiQuery({ type: FilterAudioDto })
     @ApiOperation({ summary: "필터로만 음원 가져오기" })

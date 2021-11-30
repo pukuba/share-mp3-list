@@ -89,6 +89,14 @@ export class AudioRepository {
         }
     }
 
+    async randomAudio() {
+        const audios = await this.db
+            .collection("audio")
+            .aggregate([{ $sample: { size: 15 } }])
+            .toArray()
+        return audios.map(this.formatAudioEntity)
+    }
+
     async searchAudio(
         page: number,
         keyword = "",
