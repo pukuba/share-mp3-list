@@ -96,7 +96,7 @@ export class AudioController {
 
     @Get("/main")
     @ApiQuery({ type: FilterAudioDto })
-    @ApiOperation({ summary: "필터로만 음원 가져오기" })
+    @ApiOperation({ summary: "메인 음원 가져오기" })
     async filterAudio(@Query() { page, filter }) {
         return this.audioService.getFilterAudio(page, filter)
     }

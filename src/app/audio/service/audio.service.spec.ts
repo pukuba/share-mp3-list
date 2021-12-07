@@ -113,6 +113,13 @@ describe("Audio Service", () => {
         })
     })
 
+    describe("randomAudio", () => {
+        it("should be return random Audios", async () => {
+            const audios = await service.randomAudio()
+            equal(audios.length, 2)
+        })
+    })
+
     describe("deleteAudio", () => {
         it("should be return void", async () => {
             const res = await service.deleteAudio(
