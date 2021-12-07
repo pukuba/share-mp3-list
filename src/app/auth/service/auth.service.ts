@@ -58,7 +58,8 @@ export class AuthService {
         const isBlackList = await this.redisService.getData(
             `blacklist-${verificationToken}`,
         )
-        if (isBlackList !== null) throw new UnauthorizedException()
+        if (isBlackList !== null)
+            throw new UnauthorizedException("해당 토큰은 블랙리스트입니다")
         const exp = jwtResult.exp - Math.floor(Date.now() / 1000)
         await Promise.all([
             this.userRepository.createUser(dto),
@@ -129,7 +130,7 @@ export class AuthService {
             `blacklist-${verificationToken}`,
         )
         if (isBlackList !== null) {
-            throw new UnauthorizedException()
+            throw new UnauthorizedException("해당 토큰은 블랙리스트입니다")
         }
         const exp = jwtData.exp - Math.floor(Date.now() / 1000)
         const [user] = await Promise.all([
@@ -163,7 +164,8 @@ export class AuthService {
         const isBlackList = await this.redisService.getData(
             `blacklist-${verificationToken}`,
         )
-        if (isBlackList !== null) throw new UnauthorizedException()
+        if (isBlackList !== null)
+            throw new UnauthorizedException("해당 토큰은 블랙리스트입니다")
         const exp = jwtResult.exp - Math.floor(Date.now() / 1000)
         await this.userRepository.updateUserPassword(jwtResult.id, password)
         await this.redisService.setOnlyKey(

@@ -38,7 +38,7 @@ export class AudioService {
     ) {
         payload.name = payload.name.replace(/^\s+|\s+$/g, "")
         if (!file.originalname.endsWith(".mp3")) {
-            throw new BadRequestException("Only mp3 files are allowed")
+            throw new BadRequestException("mp3 파일만 가능합니다")
         }
         if (
             payload.name.length === 0 ||

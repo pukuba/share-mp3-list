@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     async validate({ iat, exp, id }): Promise<any> {
         const timeDiff = exp - iat
         if (timeDiff <= 0) {
-            throw new UnauthorizedException()
+            throw new UnauthorizedException("토큰이 만료되었습니다")
         }
         try {
             const user = await this.userRepository.getUserByEmail(id)
@@ -36,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             }
         } catch (e) {
             console.log(e)
-            throw new UnauthorizedException()
+            throw new UnauthorizedException("계정이 존재하지 않습니다")
         }
     }
 }

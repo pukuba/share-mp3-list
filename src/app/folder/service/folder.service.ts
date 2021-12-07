@@ -24,10 +24,7 @@ import { StatusOk } from "src/shared/types"
 
 @Injectable()
 export class FolderService {
-    constructor(
-        private readonly userRepository: UserRepository,
-        private readonly folderRepository: FolderRepository,
-    ) {}
+    constructor(private readonly folderRepository: FolderRepository) {}
 
     async like(userId: string, folderId: string) {
         const getFolder = await this.folderRepository.getFolderByFolderId(
